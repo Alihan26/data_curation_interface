@@ -1,1 +1,7 @@
 backend/env_template.txt
+
+# env files
+.env
+*.env
+**/.env
+backend/.env
