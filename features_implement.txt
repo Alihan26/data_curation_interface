@@ -1,0 +1,271 @@
+FEATURES I WANT TO IMPLEMENT:
+
+
+GENERAL:
+
+PRE-CURATION:
+
+POST-CURATION:
+
+Save Manual Metadata in the manual metadata curation does not work.
+
+The numbers in the "Metadata Fields Overview" are not updated.
+
+After curation with the ai, we have the metadata fields. Right now, the evidence is being shown inside the metadata field, and also highlighted in the text. But there is some incoherence. There may be some information overlap, so we need to find a way to show that the same evidence supports two metadata fields if that's the case. And in the Metadata field, i don't want only the "Supporting Evidence", but i also want to read the reasoning of the AI.
+
+Speaking of reasoning of AI, how about we create another AI agent that sums up the results to the user, and guides him step by step until the end, after each metadata field has been either accepted, rejected, edited etc. or filled in manually, can we try to integrate it please? So if we try to do that, how do we register this second ai agent?
+
+I want to see the details of the gpt api that i'm using, and details about my workflow. Each curation workflow, after publishing should show me how much tokens it cost me, how much time the whole process has cost me, and how much money i paid. And also, the "Accept all Pending" button does not work? Check everything. The history should not be erased! when i go back to Pre-Curation page, the Metadata Overview numbers should be changed according to my changes in the post curation
+
+Should I not have an external Database like SQL or something?
+
+Refactoring Frontend: I want everything to be more atomic. Also in the backend. Just like in Software Engineering with Thomas Fritz
+
+Source name should only be selectable, not generatable. Only entity should be addable.
+
+Go over this code again. Three times actually. What improvements and errors do you see? Fix them and give me new suggestions.
+
+Metadata Fields Overview: What are those numbers and titles??
+
+Another AI Agent can come and check whether two curators that work on the same task have created two similar metadata fields, if yes, suggest to merge them
+
+We need more error logging, especially with the API endpoints. What if token limit for gpt is reached?
+
+"How to use this system" should be able to be closed and reopened.
+
+
+
+I want to be able to add new metadata fields manually, also giving the option to highlight the text manually. Give option to choose highlighting color manually.
+
+I want the AI to be able to add new metadata fields manually.
+
+Being able to add new metadata fields, and transfer it back using the API.
+
+History does not work yet.
+
+The logging of the metadata fields for an entity is wrong. They should not be added each time, only updated by every time we process the same entity again, keeping it's history.
+
+PUT YOUR CODE ON GIT PLEASE
+
+Pinging empty Metadata fields for other curators?
+
+Give specific order and categorization to the metadata fields. Descriptive/Contextual? What if there are 100 metadata fields?
+
+Being able to stop the AI curation on spot.
+
+How is the Confidence exactly being done? Explain how it's done to the curator in the frontend how it's handled
+
+Afterwards, we do finetuning. But how? With API or on our own via manual updating in our code? Per template?
+
+
+
+
+
+
+
+//---------------------------------------------------------------------//
+
+
+
+
+CURSOR AI SUGGESTIONS:
+Perfect! Let's skip the README and go straight to the comprehensive system audit. I'll examine the entire codebase three times to find all bugs, non-working features, and create a detailed TODO list.
+
+## �� **SYSTEM AUDIT - ROUND 1: Backend Analysis**
+
+Read file: backend/app.py
+Read file: backend/app.py
+Read file: backend/app.py
+Read file: backend/app.py
+Read file: backend/app.py
+Read file: backend/app.py
+Read file: backend/app.py
+Read file: backend/app.py
+Read file: backend/app.py
+Now let me examine the frontend code:
+
+## �� **SYSTEM AUDIT - ROUND 2: Frontend Analysis**
+
+Read file: frontend/src/App.vue
+Read file: frontend/src/App.vue
+Read file: frontend/src/App.vue
+Read file: frontend/src/App.vue
+Read file: frontend/src/App.vue
+Read file: frontend/src/App.vue
+Read file: frontend/src/App.vue
+Read file: frontend/src/App.vue
+Now let me examine the API layer and other components:
+
+## �� **SYSTEM AUDIT - ROUND 3: API Layer & Dependencies Analysis**
+
+Read file: frontend/src/api.js
+Read file: backend/dummy_data.py
+Read file: backend/dummy_data.py
+Read file: backend/ai_curation.py
+Now let me check the current system status and create a comprehensive TODO list:
+
+## 🔍 **SYSTEM AUDIT COMPLETE - COMPREHENSIVE TODO LIST**
+
+Based on my three-round analysis of the entire codebase, here's what I found:
+
+## ✅ **WORKING FEATURES:**
+1. **Backend API** - All endpoints functional
+2. **Frontend Vue.js** - Main interface working
+3. **AI Integration** - OpenAI API working with confidence threshold
+4. **Basic Curation** - Accept/Reject/Edit suggestions
+5. **Evidence System** - Basic evidence tracking
+6. **Confidence Threshold** - AI filtering working
+7. **Manual Metadata Entry** - Form and saving working
+8. **Publishing Status** - Basic validation working
+
+## 🚨 **CRITICAL BUGS & ISSUES:**
+
+### **1. Publishing System Broken**
+- **Issue**: `publishEdition()` method calls wrong endpoint (`/api/editions/publish` instead of `/api/editions/{id}/publish`)
+- **Impact**: Publishing completely non-functional
+- **Location**: `frontend/src/App.vue:1350`
+
+### **2. Evidence Validation Inconsistent**
+- **Issue**: `hasValidEvidence()` method checks `sug.evidence.content` but some suggestions have string evidence
+- **Impact**: Some suggestions can't be curated due to false evidence validation
+- **Location**: `frontend/src/App.vue:1380`
+
+### **3. Missing Evidence for Manual Metadata**
+- **Issue**: Manual metadata creation doesn't require evidence but backend expects it
+- **Impact**: Manual entries fail validation
+- **Location**: `frontend/src/App.vue:1200`
+
+### **4. Duplicate Method Definition**
+- **Issue**: `curateSuggestion` method defined twice with different implementations
+- **Impact**: Confusing behavior, potential errors
+- **Location**: `frontend/src/App.vue:1130` and `frontend/src/App.vue:1400`
+
+## �� **MISSING FEATURES:**
+
+### **1. Field History & Revert System**
+- **Status**: Backend implemented, frontend UI missing
+- **Missing**: Proper history display modal, revert functionality
+- **Priority**: HIGH
+
+### **2. Audit Log Viewer**
+- **Status**: Backend implemented, frontend completely missing
+- **Missing**: Audit log display, filtering, export
+- **Priority**: HIGH
+
+### **3. Page Navigation Persistence**
+- **Status**: Basic controls exist, no persistence
+- **Missing**: Save current page, restore on reload
+- **Priority**: MEDIUM
+
+### **4. Evidence Management**
+- **Status**: Basic evidence storage, no management UI
+- **Missing**: Add/edit evidence, evidence validation tools
+- **Priority**: MEDIUM
+
+### **5. Bulk Operations**
+- **Status**: Basic accept/reject all, no advanced operations
+- **Missing**: Bulk edit, bulk evidence assignment, bulk validation
+- **Priority**: MEDIUM
+
+## 📋 **COMPREHENSIVE TODO LIST:**
+
+### **🔴 CRITICAL FIXES (Fix First):**
+1. **Fix Publishing Endpoint** - Correct API call in `publishEdition()`
+2. **Fix Evidence Validation** - Handle both string and object evidence formats
+3. **Fix Manual Metadata Evidence** - Require evidence for manual entries
+4. **Remove Duplicate Method** - Consolidate `curateSuggestion` methods
+5. **Fix Evidence Type Inconsistency** - Ensure all evidence is stored as objects
+
+### **�� HIGH PRIORITY FEATURES:**
+6. **Implement Field History Modal** - Display curation history with revert options
+7. **Create Audit Log Viewer** - Comprehensive audit log display and filtering
+8. **Add Evidence Management UI** - Tools to add/edit/validate evidence
+9. **Fix Publishing Workflow** - Complete end-to-end publishing system
+10. **Implement Proper Error Handling** - User-friendly error messages and recovery
+
+### **�� MEDIUM PRIORITY FEATURES:**
+11. **Page Navigation Persistence** - Save/restore current page state
+12. **Enhanced Bulk Operations** - Bulk edit, evidence assignment, validation
+13. **Advanced Filtering** - Filter by evidence status, confidence, curator
+14. **Export Functionality** - Export curated metadata in various formats
+15. **User Authentication** - Basic user management and session handling
+
+### **�� LOW PRIORITY IMPROVEMENTS:**
+16. **Performance Optimization** - Lazy loading, pagination for large datasets
+17. **Advanced Search** - Full-text search across metadata and evidence
+18. **Data Validation Rules** - Custom validation rules for different property types
+19. **Workflow Templates** - Predefined curation workflows
+20. **Analytics Dashboard** - Curation progress, quality metrics
+
+### **�� TECHNICAL DEBT:**
+21. **Code Organization** - Split large Vue component into smaller components
+22. **API Error Handling** - Consistent error response format
+23. **Type Safety** - Add TypeScript or proper JSDoc types
+24. **Testing** - Unit tests for critical functions
+25. **Documentation** - API documentation, user manual
+
+## �� **IMMEDIATE ACTION PLAN:**
+
+1. **Fix the 5 critical bugs** (items 1-5)
+2. **Implement Field History Modal** (item 6)
+3. **Create Audit Log Viewer** (item 7)
+4. **Fix Publishing System** (item 9)
+
+This will give you a fully functional curation system with all core features working properly.
+
+**Ready to start implementing these fixes?** 🚀
+
+
+
+
+
+//---------------------------------------------------------------------//
+
+
+
+
+Cursor AI:
+Enhanced evidence validation system?
+Better publishing workflow?
+Advanced audit logging?
+Improved curation interface?
+
+
+
+
+
+//---------------------------------------------------------------------//
+
+
+
+
+Acceptance Criteria (MVP)
+From Inbox, I can filter editions by source and open one.
+In Workspace, I can:
+Navigate pages; see highlights; click to view snippet.
+For any field, Accept/Reject/Edit a suggestion only if evidence is attached.
+Add a new field and (optionally) propose it to the project.
+See history for a field and revert.
+Publish when required fields are filled and all accepted values have evidence.
+All actions appear in an audit log with time, user, model version, and evidence refs.
+
+
+
+
+
+//---------------------------------------------------------------------//
+
+
+
+
+What the Cursor AI has suggested me:
+Phase 2: Advanced Features 📋 PLANNED
+[ ] Export functionality (JSON, CSV, XML)
+[ ] Advanced search capabilities
+[ ] Curation templates and presets
+[ ] Performance optimization
+Phase 3: System Enhancement 🔮 FUTURE
+[ ] Database persistence
+[ ] User authentication
+[ ] API rate limiting
+[ ] Webhook notifications
