@@ -719,6 +719,26 @@ def process_curation():
             
             logger.info(f"Using source_id: {selected_source_id}, edition_id: {selected_edition_id}")
             
+            # CRITICAL: Remove existing AI-generated suggestions for this source/edition combination
+            # This prevents duplicates when reprocessing content
+            existing_ai_suggestions = [
+                s for s in DATA["suggestions"] 
+                if s.get('ai_generated', False) 
+                and s.get('source_id') == selected_source_id 
+                and s.get('edition_id') == selected_edition_id
+            ]
+            
+            if existing_ai_suggestions:
+                logger.info(f"Removing {len(existing_ai_suggestions)} existing AI suggestions for source_id={selected_source_id}, edition_id={selected_edition_id}")
+                # Keep only non-AI suggestions and AI suggestions for different source/edition combinations
+                DATA["suggestions"] = [
+                    s for s in DATA["suggestions"] 
+                    if not (s.get('ai_generated', False) 
+                           and s.get('source_id') == selected_source_id 
+                           and s.get('edition_id') == selected_edition_id)
+                ]
+                logger.info(f"Remaining suggestions after cleanup: {len(DATA['suggestions'])}")
+            
             for page in pages_data:
                 try:
                     logger.info(f"DEBUG: Processing page: {page.get('url')}")
