@@ -362,6 +362,87 @@
               </div>
             </div>
           </div>
+          
+          <!-- Manual Entry Section for Missing Properties -->
+          <div v-if="missingProperties.length > 0" class="missing-properties-section">
+            <h3>Manual Entry Required</h3>
+            <p class="missing-info">
+              {{ missingProperties.length }} field{{ missingProperties.length > 1 ? 's' : '' }} need{{ missingProperties.length === 1 ? 's' : '' }} manual input 
+              (no AI suggestions{{ config.useAI ? ' or low confidence' : '' }})
+            </p>
+            
+            <div class="manual-entry-forms">
+              <div v-for="property in missingProperties" :key="property.id" class="manual-field-card">
+                <div class="field-header">
+                  <h4>{{ property.name }}</h4>
+                  <span v-if="property.is_required" class="required-indicator">Required</span>
+                  <span class="field-type">{{ property.type }}</span>
+                </div>
+                
+                <!-- Choice-based properties -->
+                <div v-if="property.type === 'MULTIPLE_CHOICE' || property.type === 'SINGLE_CHOICE' || property.type === 'BINARY'" class="field-input">
+                  <label>Select Value:</label>
+                  <select v-model="manualMetadata[property.id]" class="form-input">
+                    <option value="">Select an option...</option>
+                    <option v-for="opt in property.property_options" :key="opt.id" :value="opt.id">
+                      {{ opt.name }}
+                    </option>
+                  </select>
+                </div>
+                
+                <!-- Free text and numerical properties -->
+                <div v-else class="field-input">
+                  <label>Value:</label>
+                  <input 
+                    v-if="property.type === 'NUMERICAL'"
+                    v-model="manualMetadata[property.id]" 
+                    type="number" 
+                    class="form-input"
+                    :placeholder="`Enter ${property.name.toLowerCase()}`"
+                  >
+                  <textarea 
+                    v-else
+                    v-model="manualMetadata[property.id]" 
+                    class="form-input" 
+                    rows="2"
+                    :placeholder="`Enter ${property.name.toLowerCase()}`"
+                  ></textarea>
+                </div>
+                
+                <!-- Notes field -->
+                <div class="field-notes">
+                  <label>Notes (optional):</label>
+                  <textarea 
+                    v-model="manualMetadataNotes[property.id]" 
+                    class="form-input notes-input" 
+                    rows="1"
+                    :placeholder="`Add notes for ${property.name.toLowerCase()}`"
+                  ></textarea>
+                </div>
+              </div>
+              
+              <!-- Manual entry actions -->
+              <div class="manual-entry-actions">
+                <button 
+                  @click="saveManualMetadata" 
+                  :disabled="!hasManualMetadataChanges"
+                  class="btn btn-primary"
+                >
+                  Save Manual Entries
+                </button>
+                <button 
+                  @click="clearManualMetadata" 
+                  :disabled="!hasManualMetadataChanges"
+                  class="btn btn-secondary"
+                >
+                  Clear Form
+                </button>
+                <div class="manual-stats">
+                  {{ Object.keys(manualMetadata).filter(k => manualMetadata[k]).length }} of {{ missingProperties.length }} filled
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         
