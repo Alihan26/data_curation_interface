@@ -1,6 +1,58 @@
 <template>
   <div id="app">
-    
+    <!-- Header Navigation -->
+    <header class="app-header">
+      <div class="header-container">
+        <!-- Logo and Title -->
+        <div class="header-left">
+          <div class="logo-section">
+            <h1 class="app-title">
+              Metadata Curation Interface
+            </h1>
+            <span class="version-badge">v1.0</span>
+          </div>
+        </div>
+
+        <!-- Navigation Links -->
+        <nav class="header-nav">
+          <button @click="goToOverview" class="nav-btn overview-btn">
+            Project Overview
+          </button>
+        </nav>
+
+        <!-- User Section -->
+        <div class="header-right">
+          <!-- User Profile -->
+          <div class="user-profile">
+            <div class="user-avatar">AK</div>
+            <div class="user-info">
+              <div class="user-greeting">Hello, Alihan Karataşlı</div>
+              <div class="user-role">Data Curator</div>
+            </div>
+            <button @click="showUserMenu = !showUserMenu" class="user-menu-btn" title="User menu">
+              <span class="icon">⚙️</span>
+            </button>
+          </div>
+
+          <!-- User Dropdown Menu -->
+          <div v-if="showUserMenu" class="user-dropdown" @click.stop>
+            <div class="dropdown-item" @click="showSettings">
+              <span class="icon">⚙️</span>
+              Settings
+            </div>
+            <div class="dropdown-item" @click="showHelp">
+              <span class="icon">❓</span>
+              Help & Documentation
+            </div>
+            <div class="dropdown-divider"></div>
+            <div class="dropdown-item logout" @click="logout">
+              <span class="icon">🚪</span>
+              Logout
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
 
     <!-- Pre-Curation View -->
     <div v-if="currentView === 'pre'" class="pre-curation-container">
@@ -106,15 +158,23 @@
             </small>
           </div>
           
-          <!-- Fixed Confidence Threshold (70%) -->
+          <!-- Adjustable Confidence Threshold -->
           <div v-if="config.useAI" class="form-group">
-            <label>Confidence Threshold: 70%</label>
+            <label>Confidence Threshold: {{ config.confidenceThreshold }}%</label>
+            <input 
+              type="range" 
+              min="0" 
+              max="100" 
+              step="5" 
+              v-model.number="config.confidenceThreshold" 
+              class="slider-input"
+            >
             <small class="confidence-info">
-              Only show AI suggestions with confidence ≥ 70%.
+              Only show AI suggestions with confidence ≥ {{ config.confidenceThreshold }}%.
             </small>
           </div>
           
-          <button @click="processCuration" :disabled="!selectedEntity || isLoading" class="btn btn-primary">
+          <button @click="processCuration" :disabled="!selectedEntity || !selectedSource || isLoading" class="btn btn-primary">
             {{ isLoading ? 'AI Processing...' : 'Process Curation' }}
           </button>
           
@@ -287,6 +347,16 @@
                     <div class="header-badges">
                       <span v-if="isAIGenerated(sug)" class="ai-badge">AI</span>
                       <span v-if="sug.is_required" class="required-badge">Required</span>
+                      <span v-if="isAIGenerated(sug)" class="confidence-badge" :title="getInterpreterRationale(sug)">
+                        {{ getSuggestionConfidence(sug) }}%
+                        <div class="confidence-tooltip">
+                          <div class="tooltip-header">Confidence Analysis</div>
+                          <div class="tooltip-rationale">{{ getInterpreterRationale(sug) }}</div>
+                          <div v-if="getInterpreterTags(sug).length > 0" class="tooltip-tags">
+                            <strong>Tags:</strong> {{ getInterpreterTags(sug).join(', ') }}
+                          </div>
+                        </div>
+                      </span>
                     </div>
                   </div>
                   
@@ -329,6 +399,9 @@
                 <!-- Status Only (teardown) -->
                 <div class="status-display" :class="getStatusClass(sug)">
                   {{ getSuggestionStatus(sug).toUpperCase() }}
+                  <span v-if="isAIGenerated(sug) && getSuggestionStatus(sug) === 'accepted'" class="confidence-display">
+                    ({{ getSuggestionConfidence(sug) }}% confidence)
+                  </span>
                 </div>
 
                 <!-- Minimal Curation Actions -->
@@ -357,6 +430,9 @@
                   </button>
                   <div v-else class="status-display" :class="getStatusClass(sug)">
                     {{ getSuggestionStatus(sug).toUpperCase() }}
+                    <span v-if="isAIGenerated(sug) && getSuggestionStatus(sug) === 'accepted'" class="confidence-display">
+                      ({{ getSuggestionConfidence(sug) }}% confidence)
+                    </span>
                   </div>
                 </div>
               </div>
@@ -564,6 +640,11 @@ export default {
       currentView: 'pre', // 'pre' or 'post'
       hasProcessedContent: false, // Flag to indicate if content has been processed
       
+      // Header-related data
+      showUserMenu: false,
+      curation_client: false, // Will be set based on API availability
+      ai_service: true, // Will be set based on AI service availability
+      
     }
   },
   computed: {
@@ -612,6 +693,23 @@ export default {
         filtered = filtered.filter(s => s.source_id === parseInt(this.sourceFilter))
       }
       
+      // Apply confidence threshold filter for AI suggestions
+      if (this.config.useAI && this.config.confidenceThreshold != null) {
+        const confidenceThreshold = this.config.confidenceThreshold / 100
+        const beforeCount = filtered.length
+        const aiSuggestions = filtered.filter(s => s.ai_generated)
+        
+        // Simple debug logging
+        console.log(`🎯 Filtering ${aiSuggestions.length} AI suggestions with ${this.config.confidenceThreshold}% threshold`)
+        
+        filtered = filtered.filter(s => {
+          if (!s.ai_generated) return true // Keep non-AI suggestions
+          return (s.confidence || 0) >= confidenceThreshold
+        })
+        
+        console.log(`   • Result: ${filtered.length}/${beforeCount} suggestions shown`)
+      }
+      
       // Apply sorting
       filtered.sort((a, b) => {
         switch (this.sortBy) {
@@ -645,7 +743,9 @@ export default {
       // Get properties that need manual input:
       // 1. Properties with no suggestions at all
       // 2. Properties with low-confidence AI suggestions (below fixed 70% threshold)
-      const confidenceThreshold = 0.7
+      const confidenceThreshold = this.config && this.config.confidenceThreshold != null 
+        ? (this.config.confidenceThreshold / 100) 
+        : 0.7
       
       return this.properties.filter(prop => {
         // Find suggestions for this property
@@ -670,7 +770,9 @@ export default {
       if (!this.config.useAI || !this.properties || !this.suggestions) return 0
       
       // Count properties that have AI suggestions but are below fixed 70% threshold
-      const confidenceThreshold = 0.7
+      const confidenceThreshold = this.config && this.config.confidenceThreshold != null 
+        ? (this.config.confidenceThreshold / 100) 
+        : 0.7
       
       return this.properties.filter(prop => {
         const propertySuggestions = this.suggestions.filter(s => s.property_id === prop.id)
@@ -757,7 +859,7 @@ export default {
                  data-evidence-text="${evidenceText.replace(/"/g, '&quot;')}"
                  style="background-color: ${highlightColor}; padding: 2px 4px; border-radius: 3px; cursor: pointer; transition: background-color 0.2s ease;" 
                  title="${propertyName}: ${evidenceText}"
-                 onclick="window.highlightEvidence(${suggestion.id})"
+                 onclick="window.activateHighlight(${suggestion.id})"
                  onmouseenter="window.highlightEvidence(${suggestion.id})"
                  onmouseleave="window.unhighlightEvidence()">${evidenceText}</span>`
         )
@@ -783,7 +885,9 @@ export default {
       try {
         if (!this.config.useAI || !this.suggestions || !Array.isArray(this.suggestions)) return false
         
-        const confidenceThreshold = 0.7
+        const confidenceThreshold = this.config && this.config.confidenceThreshold != null 
+          ? (this.config.confidenceThreshold / 100) 
+          : 0.7
         return this.suggestions.some(s => 
           s.property_id === propertyId && 
           s.ai_generated && 
@@ -801,9 +905,20 @@ export default {
         return
       }
       
-      // For existing sources, always use the default URL
-      const urls = ['https://www.atharvavedapaippalada.uzh.ch/en.html']
-      console.log('Processing existing source with default URL')
+      if (!this.selectedSource) {
+        alert('Please select a source first')
+        return
+      }
+      
+      // Select URL based on entity
+      let urls = []
+      if (this.selectedEntity.name === "Martha Ballard's Diary Online") {
+        urls = ['https://dohistory.org/diary/about.html']
+      } else {
+        // Default to Atharvaveda for other entities
+        urls = ['https://www.atharvavedapaippalada.uzh.ch/en.html']
+      }
+      console.log(`Processing ${this.selectedEntity.name} with URL: ${urls[0]}`)
       
       this.isLoading = true
       try {
@@ -811,7 +926,9 @@ export default {
           entity_name: this.selectedEntity.name,
           source_name: this.selectedSource.name,
           urls: urls,
-          use_ai: this.config.useAI
+          use_ai: this.config.useAI,
+          source_id: this.selectedSource.id,
+          edition_id: this.selectedEntity.editions[0].id
         })
         
         if (response.data.success) {
@@ -831,20 +948,14 @@ export default {
               console.warn(`Duplicate suggestions in response: ${allSuggestions.length} total, ${uniqueAllSuggestions.length} unique`)
             }
             
-            // Filter suggestions by confidence threshold
-            this.suggestions = uniqueAllSuggestions.filter(s => {
-              if (!s.ai_generated) return true // Keep non-AI suggestions
-              return (s.confidence || 0) >= confidenceThreshold
-            })
+            // Store all suggestions - filtering will be done by frontend based on threshold
+            this.suggestions = uniqueAllSuggestions
             
-            // Count filtered vs. total
+            // Count AI suggestions
             const totalAISuggestions = allSuggestions.filter(s => s.ai_generated).length
-            const highConfidenceSuggestions = this.suggestions.filter(s => s.ai_generated).length
-            const lowConfidenceCount = totalAISuggestions - highConfidenceSuggestions
             
-            console.log(`AI processing complete: ${totalAISuggestions} total AI suggestions`)
-            console.log(`High confidence (≥70%): ${highConfidenceSuggestions} suggestions`)
-            console.log(`Low confidence (<70%): ${lowConfidenceCount} suggestions moved to manual entry`)
+            console.log(`AI processing complete: ${totalAISuggestions} total AI suggestions loaded`)
+            console.log(`All suggestions stored - frontend will filter based on confidence threshold`)
             
             // Force a refresh of the suggestions to ensure they're displayed
             await this.$nextTick()
@@ -872,12 +983,7 @@ export default {
           if (this.config.useAI) {
             const allSuggestions = response.data.suggestions || []
             const totalAISuggestions = allSuggestions.filter(s => s.ai_generated).length
-            const highConfidenceSuggestions = this.suggestions.filter(s => s.ai_generated).length
-            const lowConfidenceCount = totalAISuggestions - highConfidenceSuggestions
-            const totalProperties = this.properties.length
-            const manualFieldsCount = totalProperties - highConfidenceSuggestions
-            
-            alert(`AI processing complete.\n\nTotal AI suggestions: ${totalAISuggestions}\nHigh confidence (≥70%): ${highConfidenceSuggestions}\nLow confidence (<70%): ${lowConfidenceCount} (moved to manual entry)\nFields needing manual input: ${manualFieldsCount}`)
+            alert(`AI processing complete.\n\nTotal AI suggestions: ${totalAISuggestions}\nUse the confidence slider to filter suggestions.\nThreshold currently set to: ${this.config.confidenceThreshold}%`)
           }
         }
       } catch (error) {
@@ -980,6 +1086,18 @@ export default {
     },
     getSuggestionConfidence(sug) {
       return sug.confidence ? Math.round(sug.confidence * 100) : 0
+    },
+    getInterpreterRationale(sug) {
+      if (sug.agentB_rationale) {
+        return sug.agentB_rationale
+      }
+      return 'Confidence calculated by single-pass AI system'
+    },
+    getInterpreterTags(sug) {
+      if (sug.agentB_tags) {
+        return sug.agentB_tags
+      }
+      return []
     },
     getSuggestionEvidence(sug) {
       if (!sug.evidence) return 'No evidence provided'
@@ -1383,18 +1501,94 @@ export default {
        }
        
        // Here you would typically send the data to your backend
-       console.log('Saving manual entries:', {
-         metadata: this.manualMetadata,
-         notes: this.manualMetadataNotes,
-         filledFields: filledFields.length,
-         totalFields: totalFields
-       })
-       
-       alert(`Saved ${filledFields.length} of ${totalFields} metadata fields.\n\nYou can switch back to Pre-Curation or continue with manual entry.`)
-     }
-   },
-   
-   created() {
+      console.log('Saving manual entries:', {
+        metadata: this.manualMetadata,
+        notes: this.manualMetadataNotes,
+        filledFields: filledFields.length,
+        totalFields: totalFields
+      })
+      
+      alert(`Saved ${filledFields.length} of ${totalFields} metadata fields.\n\nYou can switch back to Pre-Curation or continue with manual entry.`)
+    },
+
+    // Header Methods
+    goToOverview() {
+      // Navigate to project overview page
+      if (confirm('Are you sure you want to return to the project overview? Any unsaved changes will be lost.')) {
+        // In a real application, this would navigate to a different route
+        // For now, we'll just reset the application state
+        this.resetToPreCuration()
+        alert('Returned to project overview. In a full application, this would navigate to the overview page.')
+      }
+    },
+
+    toggleView() {
+      if (this.currentView === 'pre') {
+        this.switchToPostCuration()
+      } else {
+        this.resetToPreCuration()
+      }
+    },
+
+    showSettings() {
+      this.showUserMenu = false
+      alert('Settings panel would open here. This would include:\n\n• AI model configuration\n• API endpoint settings\n• Export preferences\n• Language settings')
+    },
+
+    showHelp() {
+      this.showUserMenu = false
+      alert('Help & Documentation would open here. This would include:\n\n• User guide\n• Video tutorials\n• API documentation\n• Contact support')
+    },
+
+    exportData() {
+      this.showUserMenu = false
+      try {
+        const exportData = {
+          sources: this.sources,
+          suggestions: this.suggestions,
+          properties: this.properties,
+          timestamp: new Date().toISOString(),
+          user: 'Alihan Karataşlı'
+        }
+        
+        const dataStr = JSON.stringify(exportData, null, 2)
+        const dataBlob = new Blob([dataStr], { type: 'application/json' })
+        const url = URL.createObjectURL(dataBlob)
+        
+        const link = document.createElement('a')
+        link.href = url
+        link.download = `metadata-curation-export-${new Date().toISOString().split('T')[0]}.json`
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        URL.revokeObjectURL(url)
+        
+        alert('Data exported successfully!')
+      } catch (error) {
+        console.error('Export failed:', error)
+        alert('Export failed. Please try again.')
+      }
+    },
+
+    logout() {
+      this.showUserMenu = false
+      if (confirm('Are you sure you want to logout? Any unsaved changes will be lost.')) {
+        // In a real application, this would clear session and redirect to login
+        alert('Logout successful. In a full application, you would be redirected to the login page.')
+        // Reset application state
+        this.resetToPreCuration()
+      }
+    }
+  },
+  
+  beforeDestroy() {
+    // Clean up global functions
+    delete window.highlightEvidence
+    delete window.unhighlightEvidence
+    delete window.activateHighlight
+  },
+  
+  created() {
     // Preload metadata lists once the component is created
     this.fetchMetadata()
     
@@ -1406,6 +1600,17 @@ export default {
     window.unhighlightEvidence = () => {
       this.unhighlightEvidence()
     }
+    
+    window.activateHighlight = (suggestionId) => {
+      this.activateHighlight(suggestionId)
+    }
+    
+    // Close user menu when clicking outside
+    document.addEventListener('click', (event) => {
+      if (this.showUserMenu && !event.target.closest('.user-profile') && !event.target.closest('.user-dropdown')) {
+        this.showUserMenu = false
+      }
+    })
   }
 }
 </script>

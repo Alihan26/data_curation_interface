@@ -22,8 +22,13 @@ class AICurationService:
     def __init__(self):
         self.api_key = os.getenv('OPENAI_API_KEY')
         self.model = os.getenv('OPENAI_MODEL', 'gpt-4o-mini')
+        # Optional model overrides for two-pass mode
+        self.reasoner_model = os.getenv('AI_REASONER_MODEL', self.model)
+        self.interpreter_model = os.getenv('AI_INTERPRETER_MODEL', self.model)
         self.temperature = float(os.getenv('AI_TEMPERATURE', '0.3'))
         self.max_tokens = int(os.getenv('AI_MAX_TOKENS', '2000'))
+        # Confidence mode: 'single' (default) or 'two_pass'
+        self.confidence_mode = os.getenv('AI_CONFIDENCE_MODE', 'single').lower()
         
         if not self.api_key:
             raise ValueError("OPENAI_API_KEY environment variable is required")
@@ -32,7 +37,7 @@ class AICurationService:
         try:
             self.client = OpenAI(
                 api_key=self.api_key,
-                timeout=30.0
+                timeout=60.0
             )
             logger.info(f"AI Curation Service initialized with model: {self.model}")
         except Exception as e:
@@ -74,7 +79,7 @@ class AICurationService:
                 logger.error("OpenAI client not properly initialized")
                 return []
             
-            # Prepare the prompt for the AI
+            # Prepare the prompt for the AI (single-pass default)
             prompt = self._build_prompt(html_content, url, existing_properties)
             
             # Call OpenAI API with error handling
@@ -92,7 +97,7 @@ class AICurationService:
                         }
                     ],
                     temperature=self.temperature,
-                    max_tokens=self.max_tokens,
+                    max_tokens=min(self.max_tokens, 800),
                     response_format={"type": "json_object"}
                 )
                 
@@ -109,6 +114,130 @@ class AICurationService:
             
         except Exception as e:
             logger.error(f"Error generating AI suggestions: {str(e)}")
+            return []
+
+    # ----------------------------- Two-pass mode APIs -----------------------------
+    def generate_reasoned_suggestions(
+        self,
+        html_content: str,
+        url: str,
+        properties: List[Dict[str, Any]]
+    ) -> List[Dict[str, Any]]:
+        """
+        Agent A (Reasoner): Generate suggestions WITHOUT confidence but WITH longer reasoning and concrete evidence.
+        Returns a list of dicts with keys: property_id, property_technical_name, suggested_value, evidence, reasoning.
+        """
+        try:
+            if not hasattr(self, 'client') or self.client is None:
+                logger.error("OpenAI client not properly initialized")
+                return []
+
+            prompt = self._build_reasoner_prompt(html_content, url, properties)
+
+            response = self.client.chat.completions.create(
+                model=self.reasoner_model,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": (
+                            "You are an expert metadata reasoner. Your reasoning will be analyzed by a separate confidence system. "
+                            "Use definitive language when certain, hedging language when uncertain. "
+                            "Provide direct evidence quotes and detailed reasoning. Return ONLY valid JSON."
+                        ),
+                    },
+                    {"role": "user", "content": prompt},
+                ],
+                temperature=self.temperature,
+                max_tokens=self.max_tokens,
+                response_format={"type": "json_object"},
+            )
+
+            ai_response = response.choices[0].message.content
+            parsed = json.loads(ai_response)
+            suggestions = parsed.get('suggestions', [])
+            logger.info(f"Reasoner produced {len(suggestions)} suggestions (no confidence)")
+            # Ensure confidence is absent
+            for s in suggestions:
+                if 'confidence' in s:
+                    s.pop('confidence', None)
+            return suggestions
+        except Exception as e:
+            logger.error(f"Reasoner error: {e}")
+            return []
+
+    def interpret_confidence(
+        self,
+        reasoned_suggestions: List[Dict[str, Any]],
+        properties: List[Dict[str, Any]],
+        url: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
+        """
+        Agent B (Interpreter): Given the suggestions with reasoning/evidence, return calibrated confidences.
+        Returns list of {property_id, confidence, rationale, tags}.
+        """
+        if not reasoned_suggestions:
+            return []
+
+        try:
+            if not hasattr(self, 'client') or self.client is None:
+                logger.error("OpenAI client not properly initialized")
+                return []
+
+            # Build interpreter prompt with compact property schema and the reasoned items
+            prompt = self._build_interpreter_prompt(reasoned_suggestions, properties, url)
+
+            response = self.client.chat.completions.create(
+                model=self.interpreter_model,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": (
+                            "You are a systematic confidence scorer. Follow the provided algorithm exactly. "
+                            "Analyze linguistic patterns, evidence quality, and reasoning structure. "
+                            "Apply each scoring step methodically. Return ONLY JSON."
+                        ),
+                    },
+                    {"role": "user", "content": prompt},
+                ],
+                temperature=0.3,
+                max_tokens=min(self.max_tokens, 800),
+                response_format={"type": "json_object"},
+            )
+
+            ai_response = response.choices[0].message.content
+            logger.debug(f"Agent B raw response: {ai_response}")
+            
+            try:
+                parsed = json.loads(ai_response)
+            except json.JSONDecodeError as e:
+                logger.error(f"Agent B JSON parsing failed: {e}")
+                logger.error(f"Raw response: {ai_response}")
+                return []
+                
+            items = parsed.get('confidences', [])
+            # Normalize
+            normalized = []
+            for item in items:
+                try:
+                    pid = int(item.get('property_id'))
+                    c = float(item.get('confidence', 0.0))
+                    if c < 0.0:
+                        c = 0.0
+                    if c > 1.0:
+                        c = 1.0
+                    normalized.append({
+                        'property_id': pid,
+                        'confidence': c,
+                        'rationale': item.get('rationale', ''),
+                        'tags': item.get('tags', {}),
+                        'confidence_source': 'interpreter_v1'
+                    })
+                except Exception:
+                    continue
+            logger.info(f"Interpreter produced confidences for {len(normalized)} properties")
+            return normalized
+        except Exception as e:
+            logger.error(f"Interpreter error: {e}")
             return []
     
     def _build_prompt(self, html_content: str, url: str, properties: List[Dict[str, Any]]) -> str:
@@ -176,6 +305,140 @@ RETURN FORMAT (JSON):
 Generate suggestions based on what you can confidently determine from the content. Only suggest values when you have clear evidence. If you cannot determine a value for a property, set confidence to 0.0 and provide reasoning.
 """
         
+        return prompt.strip()
+
+    def _build_reasoner_prompt(self, html_content: str, url: str, properties: List[Dict[str, Any]]) -> str:
+        """Prompt for Agent A (Reasoner) without confidence, with longer reasoning and direct evidence."""
+        cleaned_content = ' '.join(html_content.split())[:8000]
+
+        property_descriptions = []
+        for prop in properties:
+            prop_id = prop.get('id', 'UNKNOWN')
+            prop_type = prop.get('type', 'UNKNOWN')
+            prop_name = prop.get('name', 'Unknown')
+            if prop_type in ['MULTIPLE_CHOICE', 'SINGLE_CHOICE']:
+                options = [opt['name'] for opt in prop.get('property_options', [])]
+                prop_desc = f"ID {prop_id}: {prop_name} ({prop_type}): {', '.join(options)}"
+            elif prop_type == 'BINARY':
+                prop_desc = f"ID {prop_id}: {prop_name} (BINARY): true/false"
+            elif prop_type == 'NUMERICAL':
+                prop_desc = f"ID {prop_id}: {prop_name} (NUMERICAL): numeric value"
+            elif prop_type == 'FREE_TEXT':
+                prop_desc = f"ID {prop_id}: {prop_name} (FREE_TEXT): descriptive text"
+            else:
+                prop_desc = f"ID {prop_id}: {prop_name} ({prop_type})"
+            property_descriptions.append(f"- {prop_desc}")
+
+        prompt = f"""
+Analyze the following HTML content from {url} and propose metadata suggestions.
+
+AVAILABLE METADATA PROPERTIES:
+{chr(10).join(property_descriptions)}
+
+HTML CONTENT:
+{cleaned_content}
+
+INSTRUCTIONS:
+1. For each property, suggest a value if supported by content.
+2. EVIDENCE: Provide DIRECT verbatim quotes when possible. Be specific about location/context.
+3. REASONING: Write 3-6 sentences using CLEAR language patterns:
+   - Use DEFINITIVE language when certain: "clearly states", "explicitly mentions", "definitively shows"
+   - Use HEDGING language when uncertain: "might indicate", "possibly suggests", "seems to imply"
+   - MENTION ALTERNATIVES: "Other options like X were rejected because..."
+   - BE SPECIFIC: Include exact locations, context, and detailed analysis
+4. DO NOT output confidence scores - a separate system will analyze your reasoning.
+5. Use EXACT property ID numbers.
+
+RETURN FORMAT (JSON):
+{{
+  "suggestions": [
+    {{
+      "property_id": <exact_property_id_number>,
+      "property_technical_name": "<technical_name>",
+      "suggested_value": "<value>",
+      "evidence": "<direct quote or very specific snippet>",
+      "reasoning": "<long reasoning, 3-6 sentences>"
+    }}
+  ]
+}}
+"""
+        return prompt.strip()
+
+    def _build_interpreter_prompt(
+        self,
+        reasoned_suggestions: List[Dict[str, Any]],
+        properties: List[Dict[str, Any]],
+        url: Optional[str] = None
+    ) -> str:
+        """Prompt for Agent B to assign calibrated confidences to reasoned suggestions."""
+        # Build a compact property schema map for constraints/context
+        prop_lines = []
+        prop_map = {}
+        for p in properties:
+            pid = p.get('id')
+            if pid is None:
+                continue
+            prop_map[int(pid)] = p
+            ptype = p.get('type', 'FREE_TEXT')
+            name = p.get('name', '')
+            opts = ', '.join([o.get('name', '') for o in p.get('property_options', [])]) if ptype in ['MULTIPLE_CHOICE', 'SINGLE_CHOICE', 'BINARY'] else ''
+            prop_lines.append(f"- {pid}: {name} [{ptype}] {opts}")
+
+        items_lines = []
+        for s in reasoned_suggestions:
+            pid = s.get('property_id')
+            val = s.get('suggested_value')
+            ev = s.get('evidence', '')
+            rs = s.get('reasoning', '')
+            items_lines.append(
+                f"- property_id={pid}\n  value={val}\n  evidence={ev}\n  reasoning={rs}"
+            )
+
+        context_url = url or ""
+
+        prompt = f"""You are a confidence scorer. Use this systematic algorithm to rate each suggestion [0.0-1.0]:
+
+CONFIDENCE ALGORITHM:
+1. START: Base confidence = 0.5
+2. EVIDENCE ANALYSIS:
+   - Direct quote with location: +0.2
+   - Vague/indirect reference: +0.1
+   - No specific evidence: +0.0
+3. REASONING ANALYSIS:
+   - Definitive language ("clearly states", "explicitly mentions", "definitively shows"): +0.2
+   - Moderate certainty ("indicates", "suggests", "shows"): +0.1
+   - Hedging language ("might", "possibly", "seems", "could be"): -0.2
+   - Uncertainty words ("uncertain", "unclear", "ambiguous"): -0.3
+   - Mentions alternatives considered: +0.1
+   - Detailed reasoning (>50 words): +0.1
+4. PROPERTY ALIGNMENT:
+   - Perfect match to property constraints: +0.1
+   - Partial/unclear match: +0.0
+   - Potential mismatch: -0.2
+5. UNCERTAINTY INDICATORS:
+   - Words like "uncertain", "unclear": -0.3
+   - Missing key information: -0.2
+
+FINAL = Base + Evidence + Reasoning + Alignment - Uncertainty
+CLAMP to [0.0, 1.0]
+
+PROPERTIES:
+{chr(10).join(prop_lines)}
+
+ITEMS TO SCORE:
+{chr(10).join(items_lines)}
+
+Apply the algorithm to each item. Return concise JSON:
+{{
+  "confidences": [
+    {{
+      "property_id": <id>,
+      "confidence": <score>,
+      "rationale": "<score formula>",
+      "tags": {{"evidence": "direct|indirect|none", "reasoning": "definitive|hedged|uncertain"}}
+    }}
+  ]
+}}"""
         return prompt.strip()
     
     def validate_suggestions(

@@ -20,8 +20,8 @@ def get_dummy_sources() -> List[Dict[str, Any]]:
     return [
         {
             "id": 1,
-            "name": "Atharvaveda Digital Library",
-            "description": "Digital editions from the Paippalāda recension of the Atharvaveda",
+            "name": "Digital Edition Catalogue",
+            "description": "Collection of digital scholarly editions from various academic institutions",
             "is_dummy": True,
             "source_type": "academic_digital_library"
         }
@@ -128,29 +128,21 @@ def get_dummy_properties() -> List[Dict[str, Any]]:
 def get_dummy_editions() -> List[Dict[str, Any]]:
     """Get dummy editions with multiple entities per source."""
     return [
-        # Source 1: Atharvaveda Digital Library
+        # Source 1: Digital Edition Catalogue
         {
             "id": 1,
             "source_id": 1,
-            "source_internal_id": "atharvaveda_paippalada_001",
+            "source_internal_id": "paippalada_atharvaveda_001",
             "entity_name": "Paippalāda Recension of the Atharvaveda",
-            "entity_description": "Primary recension of the Atharvaveda",
+            "entity_description": "Primary recension of the Atharvaveda - digital critical edition",
             "is_dummy": True
         },
         {
             "id": 2,
             "source_id": 1,
-            "source_internal_id": "atharvaveda_saunakiya_002",
-            "entity_name": "Saunakiya Recension of the Atharvaveda",
-            "entity_description": "Secondary recension of the Atharvaveda",
-            "is_dummy": True
-        },
-        {
-            "id": 3,
-            "source_id": 1,
-            "source_internal_id": "atharvaveda_commentary_003",
-            "entity_name": "Atharvaveda Commentary Collection",
-            "entity_description": "Various commentaries on Atharvaveda texts",
+            "source_internal_id": "martha_ballard_diary_159",
+            "entity_name": "Martha Ballard's Diary Online",
+            "entity_description": "Digital edition of Martha Ballard's diary (1785-1812) from Maine State Library",
             "is_dummy": True
         }
     ]

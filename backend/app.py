@@ -9,11 +9,15 @@ from enum import Enum
 import os
 from dotenv import load_dotenv
 
+# Import metadata curation client
+from metadata_curation_client import CurationAPIClient, PropertyType, SourceManager
+
 # --------------------------------------------------------------------------
 # Constants (external demo endpoint used by the preview helper below)
 # --------------------------------------------------------------------------
 
-EXTERNAL_API: str = "https://api.example.org/v1/pages"  # ← placeholder
+# External API URL will be replaced by metadata curation client
+EXTERNAL_API: str = "https://api.example.org/v1/pages"  # ← placeholder (replaced by client)
 
 # --------------------------------------------------------------------------------------
 # Existing preview/utility imports and constants
@@ -31,6 +35,24 @@ import logging
 logging.basicConfig(level=logging.INFO)
 app.logger.setLevel(logging.INFO)
 logger = app.logger
+
+# Initialize Metadata Curation API Client
+curation_client = None
+try:
+    api_base_url = os.getenv('CURATION_API_BASE_URL')
+    api_key = os.getenv('CURATION_API_KEY')
+    
+    if api_base_url:
+        curation_client = CurationAPIClient(
+            base_url=api_base_url,
+            api_key=api_key
+        )
+        logger.info(f"Metadata Curation API Client initialized with base URL: {api_base_url}")
+    else:
+        logger.warning("CURATION_API_BASE_URL not set - using dummy data mode")
+except Exception as e:
+    logger.error(f"Failed to initialize Metadata Curation API Client: {e}")
+    logger.warning("Falling back to dummy data mode")
 
 # Initialize AI service (will fail gracefully if no API key)
 ai_service = None
@@ -90,6 +112,69 @@ def _gen_id(key: str) -> int:
 
     return len(DATA[key]) + 1
 
+
+def _fetch_api_data() -> None:
+    """Fetch data from the metadata curation API if available, otherwise use dummy data."""
+    
+    if DATA["sources"]:  # already populated
+        return
+    
+    if curation_client:
+        try:
+            logger.info("Fetching data from Metadata Curation API...")
+            
+            # Fetch sources from API
+            api_sources = curation_client.get_sources()
+            DATA["sources"] = []
+            for source in api_sources:
+                DATA["sources"].append({
+                    "id": source.get("id"),
+                    "name": source.get("name", "Unknown Source"),
+                    "description": source.get("description", ""),
+                    "source_type": source.get("source_type", "unknown"),
+                    "is_dummy": False
+                })
+            
+            # Fetch properties from API
+            api_properties = curation_client.get_properties()
+            DATA["properties"] = []
+            for prop in api_properties:
+                property_data = {
+                    "id": prop.get("id"),
+                    "technical_name": prop.get("technical_name", ""),
+                    "name": prop.get("name", "Unknown Property"),
+                    "type": prop.get("type", "FREE_TEXT"),
+                    "is_required": prop.get("is_required", False),
+                    "property_options": prop.get("property_options", [])
+                }
+                DATA["properties"].append(property_data)
+            
+            # Fetch entities/editions from API
+            DATA["editions"] = []
+            for source in DATA["sources"]:
+                try:
+                    entities = curation_client.get_source_entities(source["id"])
+                    for entity in entities:
+                        DATA["editions"].append({
+                            "id": entity.get("id"),
+                            "source_id": source["id"],
+                            "source_internal_id": entity.get("source_internal_id", ""),
+                            "entity_name": entity.get("entity_name", "Unknown Entity"),
+                            "entity_description": entity.get("entity_description", ""),
+                            "is_dummy": False
+                        })
+                except Exception as e:
+                    logger.error(f"Failed to fetch entities for source {source['id']}: {e}")
+            
+            logger.info(f"API data loaded - Sources: {len(DATA['sources'])}, Properties: {len(DATA['properties'])}, Editions: {len(DATA['editions'])}")
+            
+        except Exception as e:
+            logger.error(f"Failed to fetch data from API: {e}")
+            logger.info("Falling back to dummy data...")
+            _initialize_dummy_data()
+    else:
+        logger.info("No API client available, using dummy data...")
+        _initialize_dummy_data()
 
 def _initialize_dummy_data() -> None:
     """Populate store with deterministic demo data so the front-end has something to fetch
@@ -739,59 +824,136 @@ def process_curation():
                 ]
                 logger.info(f"Remaining suggestions after cleanup: {len(DATA['suggestions'])}")
             
+            # Decide confidence mode
+            confidence_mode = os.getenv('AI_CONFIDENCE_MODE', 'single').lower()
+
             for page in pages_data:
                 try:
                     logger.info(f"DEBUG: Processing page: {page.get('url')}")
                     logger.info(f"DEBUG: Page text content length: {len(page.get('text_content', ''))}")
-                    
-                    # Generate AI suggestions for this page
-                    page_suggestions = ai_service.generate_metadata_suggestions(
-                        page.get('text_content', ''), 
-                        page.get('url', ''), 
-                        DATA["properties"]
-                    )
-                    
-                    logger.info(f"DEBUG: Raw AI suggestions received: {len(page_suggestions)}")
-                    if page_suggestions:
-                        logger.info(f"DEBUG: First raw suggestion: {page_suggestions[0]}")
-                    
-                    # Validate and format
-                    validated = ai_service.validate_suggestions(
-                        page_suggestions, DATA["properties"]
-                    )
-                    
-                    logger.info(f"DEBUG: Validated suggestions: {len(validated)}")
-                    
-                    # Add page context and create proper suggestion records
-                    for sug in validated:
-                        # Create a proper suggestion record
-                        suggestion_record = {
-                            'id': _gen_id("suggestions"),
-                            'source_id': selected_source_id,
-                            'edition_id': selected_edition_id,
-                            'property_id': sug['property_id'],
-                            'property_option_id': sug.get('property_option_id'),
-                            'custom_value': sug.get('custom_value'),
-                            'status': 'pending',
-                            'ai_generated': True,
-                            'confidence': sug.get('confidence', 0.0),
-                            'evidence': {
-                                'content': sug.get('evidence', ''),
-                                'source_url': page.get('url'),
+
+                    if confidence_mode == 'two_pass' and hasattr(ai_service, 'generate_reasoned_suggestions'):
+                        logger.info("🤖 Starting two-pass AI confidence system")
+                        # Agent A: get reasoned suggestions without confidence
+                        reasoned = ai_service.generate_reasoned_suggestions(
+                            page.get('text_content', ''),
+                            page.get('url', ''),
+                            DATA['properties']
+                        )
+                        logger.info(f"🧠 Agent A (Reasoner) generated {len(reasoned)} reasoned suggestions")
+                        logger.info(f"DEBUG: Reasoner suggestions: {len(reasoned)}")
+
+                        # Validate shape for value/evidence (ignore confidence)
+                        # Reuse validator by temporarily injecting confidence=0.0 to pass schema where needed
+                        prepared_for_validation = []
+                        for rs in reasoned:
+                            rs_copy = dict(rs)
+                            if 'confidence' not in rs_copy:
+                                rs_copy['confidence'] = 0.0
+                            prepared_for_validation.append(rs_copy)
+
+                        validated = ai_service.validate_suggestions(prepared_for_validation, DATA['properties'])
+                        logger.info(f"DEBUG: Validated (two-pass) suggestions: {len(validated)}")
+
+                        # Agent B: interpret confidences
+                        interpreter_outputs = ai_service.interpret_confidence(reasoned, DATA['properties'], page.get('url'))
+                        logger.info(f"🎯 Agent B (Interpreter) processed {len(interpreter_outputs)} confidence interpretations")
+                        
+                        # Map property_id -> interpreter result
+                        interp_by_pid = {int(it.get('property_id')): it for it in interpreter_outputs if it.get('property_id') is not None}
+                        
+                        # Log confidence distribution statistics
+                        confidence_scores = [float(it.get('confidence', 0.0)) for it in interpreter_outputs]
+                        if confidence_scores:
+                            avg_confidence = sum(confidence_scores) / len(confidence_scores)
+                            min_confidence = min(confidence_scores)
+                            max_confidence = max(confidence_scores)
+                            high_conf_count = len([c for c in confidence_scores if c >= 0.8])
+                            low_conf_count = len([c for c in confidence_scores if c < 0.5])
+                            
+                            logger.info(f"📊 Two-pass confidence distribution:")
+                            logger.info(f"   • Average: {avg_confidence:.2f}")
+                            logger.info(f"   • Range: {min_confidence:.2f} - {max_confidence:.2f}")
+                            logger.info(f"   • High confidence (≥80%): {high_conf_count}/{len(confidence_scores)}")
+                            logger.info(f"   • Low confidence (<50%): {low_conf_count}/{len(confidence_scores)}")
+
+                        for sug in validated:
+                            pid = sug['property_id']
+                            interp = interp_by_pid.get(pid, {})
+                            final_confidence = float(interp.get('confidence', 0.0))
+                            
+                            # Debug logging for each suggestion
+                            logger.info(f"🎯 Property {pid}: final_confidence={final_confidence:.2f} ({final_confidence*100:.0f}%)")
+                            # Build record
+                            suggestion_record = {
+                                'id': _gen_id('suggestions'),
+                                'source_id': selected_source_id,
+                                'edition_id': selected_edition_id,
+                                'property_id': sug['property_id'],
+                                'property_option_id': sug.get('property_option_id'),
+                                'custom_value': sug.get('custom_value'),
+                                'status': 'pending',
+                                'ai_generated': True,
+                                'confidence': final_confidence,
+                                'confidence_source': interp.get('confidence_source', 'interpreter_v1'),
+                                'evidence': {
+                                    'content': reasoned and next((r.get('evidence') for r in reasoned if int(r.get('property_id', -1)) == pid), ''),
+                                    'source_url': page.get('url'),
+                                    'confidence': final_confidence,
+                                    'extraction_method': 'ai_generated'
+                                },
+                                'reasoning': reasoned and next((r.get('reasoning') for r in reasoned if int(r.get('property_id', -1)) == pid), ''),
+                                'agentA_reasoning': reasoned and next((r.get('reasoning') for r in reasoned if int(r.get('property_id', -1)) == pid), ''),
+                                'agentA_evidence': reasoned and next((r.get('evidence') for r in reasoned if int(r.get('property_id', -1)) == pid), ''),
+                                'agentB_confidence': final_confidence,
+                                'agentB_rationale': interp.get('rationale', ''),
+                                'agentB_tags': interp.get('tags', {}),
+                                'page_url': page.get('url'),
+                                'page_title': page.get('title')
+                            }
+
+                            DATA['suggestions'].append(suggestion_record)
+                            ai_suggestions.append(suggestion_record)
+
+                    else:
+                        # Single-pass fallback (current behavior)
+                        page_suggestions = ai_service.generate_metadata_suggestions(
+                            page.get('text_content', ''),
+                            page.get('url', ''),
+                            DATA['properties']
+                        )
+
+                        logger.info(f"DEBUG: Raw AI suggestions received: {len(page_suggestions)}")
+                        if page_suggestions:
+                            logger.info(f"DEBUG: First raw suggestion: {page_suggestions[0]}")
+
+                        validated = ai_service.validate_suggestions(page_suggestions, DATA['properties'])
+                        logger.info(f"DEBUG: Validated suggestions: {len(validated)}")
+
+                        for sug in validated:
+                            suggestion_record = {
+                                'id': _gen_id('suggestions'),
+                                'source_id': selected_source_id,
+                                'edition_id': selected_edition_id,
+                                'property_id': sug['property_id'],
+                                'property_option_id': sug.get('property_option_id'),
+                                'custom_value': sug.get('custom_value'),
+                                'status': 'pending',
+                                'ai_generated': True,
                                 'confidence': sug.get('confidence', 0.0),
-                                'extraction_method': 'ai_generated'
-                            },
-                            'reasoning': sug.get('reasoning', ''),
-                            'page_url': page.get('url'),
-                            'page_title': page.get('title')
-                        }
-                        
-                        # CRITICAL: Store the suggestion in the main data store
-                        DATA["suggestions"].append(suggestion_record)
-                        
-                        # Add to AI suggestions list for response
-                        ai_suggestions.append(suggestion_record)
-                    
+                                'evidence': {
+                                    'content': sug.get('evidence', ''),
+                                    'source_url': page.get('url'),
+                                    'confidence': sug.get('confidence', 0.0),
+                                    'extraction_method': 'ai_generated'
+                                },
+                                'reasoning': sug.get('reasoning', ''),
+                                'page_url': page.get('url'),
+                                'page_title': page.get('title')
+                            }
+                            DATA['suggestions'].append(suggestion_record)
+                            ai_suggestions.append(suggestion_record)
+
                 except Exception as e:
                     logger.error(f"Failed to generate AI suggestions for {page.get('url')}: {e}")
                     import traceback
@@ -1466,9 +1628,82 @@ def _get_property_name(property_id: int) -> str:
     return property_def.get("name", f"Property {property_id}") if property_def else f"Property {property_id}"
 
 
+@app.route('/api/debug/clear-data', methods=['POST'])
+def clear_all_data():
+    """Debug endpoint to clear all data and reload from dummy data."""
+    try:
+        global DATA
+        DATA = {
+            "sources": [],
+            "properties": [],
+            "editions": [],
+            "suggestions": [],
+            "evidence": []
+        }
+        _fetch_api_data()
+        return jsonify({
+            "success": True,
+            "message": "Data cleared and reloaded",
+            "sources": len(DATA["sources"]),
+            "properties": len(DATA["properties"]),
+            "editions": len(DATA["editions"])
+        })
+    except Exception as e:
+        logger.error(f"Error clearing data: {e}")
+        return jsonify({"error": "Failed to clear data"}), 500
+
+@app.route('/api/debug/cleanup-duplicates', methods=['POST'])
+def cleanup_duplicate_suggestions():
+    """Debug endpoint to manually clean up duplicate AI suggestions."""
+    try:
+        original_count = len(DATA["suggestions"])
+        
+        # Group suggestions by source_id, edition_id, property_id
+        suggestions_by_key = {}
+        for suggestion in DATA["suggestions"]:
+            key = (suggestion.get('source_id'), suggestion.get('edition_id'), suggestion.get('property_id'))
+            if key not in suggestions_by_key:
+                suggestions_by_key[key] = []
+            suggestions_by_key[key].append(suggestion)
+        
+        # Keep only the latest AI suggestion for each key, keep all manual suggestions
+        cleaned_suggestions = []
+        duplicates_removed = 0
+        
+        for key, suggestions in suggestions_by_key.items():
+            ai_suggestions = [s for s in suggestions if s.get('ai_generated', False)]
+            manual_suggestions = [s for s in suggestions if not s.get('ai_generated', False)]
+            
+            # Keep all manual suggestions
+            cleaned_suggestions.extend(manual_suggestions)
+            
+            # Keep only the latest AI suggestion (highest ID)
+            if ai_suggestions:
+                latest_ai = max(ai_suggestions, key=lambda x: x.get('id', 0))
+                cleaned_suggestions.append(latest_ai)
+                duplicates_removed += len(ai_suggestions) - 1
+        
+        DATA["suggestions"] = cleaned_suggestions
+        final_count = len(DATA["suggestions"])
+        
+        logger.info(f"Cleanup: Removed {duplicates_removed} duplicate AI suggestions ({original_count} -> {final_count})")
+        
+        return jsonify({
+            "success": True,
+            "original_count": original_count,
+            "final_count": final_count,
+            "duplicates_removed": duplicates_removed,
+            "cleanup_summary": f"Removed {duplicates_removed} duplicate AI suggestions"
+        })
+        
+    except Exception as e:
+        logger.error(f"Error cleaning up duplicates: {e}")
+        return jsonify({"error": "Failed to cleanup duplicates"}), 500
+
+
 if __name__ == '__main__':
     print("🚀 Starting Curation Preview API & Metadata-Curation mock…")
-    # Initialize dummy data before starting the server
-    _initialize_dummy_data()
-    logger.info(f"DEBUG: Dummy data initialized - Sources: {len(DATA['sources'])}, Properties: {len(DATA['properties'])}, Editions: {len(DATA['editions'])}")
+    # Initialize data (API or dummy) before starting the server
+    _fetch_api_data()
+    logger.info(f"DEBUG: Data initialized - Sources: {len(DATA['sources'])}, Properties: {len(DATA['properties'])}, Editions: {len(DATA['editions'])}")
     app.run(debug=False, host='0.0.0.0', port=8000)
