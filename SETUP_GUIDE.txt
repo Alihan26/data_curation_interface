@@ -1,0 +1,160 @@
+# Data Curation Interface - Complete Setup Guide
+# ================================================
+
+This guide explains how to start both the external metadata curation API and our data curation interface.
+
+## Prerequisites
+- Python 3.13+ installed
+- Node.js and npm installed
+- Both interfaces' source code available
+
+## Step 1: Start the External Metadata Curation API
+# ================================================
+
+1. Navigate to the external interface directory (the one running on ports 5173 and 8001)
+2. Start the external API:
+   ```bash
+   # This should start the external API on port 8001
+   # (Follow the external interface's own setup instructions)
+   ```
+
+3. Verify the external API is running:
+   ```bash
+   curl http://localhost:8001/sources/
+   ```
+   You should see JSON data with sources, properties, and entities.
+
+## Step 2: Start Our Data Curation Interface
+# =========================================
+
+### Backend Setup
+1. Navigate to our backend directory:
+   ```bash
+   cd /Users/alihankaratasli/Desktop/Bachelorarbeit/Code/GitHub/data_curation_interface/backend
+   ```
+
+2. Activate the virtual environment:
+   ```bash
+   source venv/bin/activate
+   ```
+
+3. Install dependencies (if not already done):
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. Start the backend with external API connection:
+   ```bash
+   CURATION_API_BASE_URL=http://localhost:8001 python -c "
+   import sys
+   sys.path.append('.')
+   from app import app
+   if __name__ == '__main__':
+       app.run(host='0.0.0.0', port=8000, debug=False)
+   "
+   ```
+
+### Frontend Setup
+1. Open a new terminal and navigate to frontend directory:
+   ```bash
+   cd /Users/alihankaratasli/Desktop/Bachelorarbeit/Code/GitHub/data_curation_interface/frontend
+   ```
+
+2. Install dependencies (if not already done):
+   ```bash
+   npm install
+   ```
+
+3. Start the frontend development server:
+   ```bash
+   npm run dev -- --port 4000
+   ```
+
+## Step 3: Verify Everything is Working
+# ====================================
+
+1. **External API**: http://localhost:8001/sources/ (should show JSON data)
+2. **Our Backend**: http://localhost:8000/api/sources (should show same data)
+3. **Our Frontend**: http://localhost:4000 (should show the interface with entities)
+
+## Step 4: Force Data Reload (if needed)
+# =====================================
+
+If the backend shows empty data, force a reload:
+```bash
+curl -X POST http://localhost:8000/api/debug/clear-data
+```
+
+## Port Configuration
+# ==================
+
+- **External API**: Port 8001 (sources, properties, entities)
+- **Our Backend**: Port 8000 (proxy to external API + our endpoints)
+- **Our Frontend**: Port 4000 (user interface)
+
+## Environment Variables
+# =====================
+
+The backend needs this environment variable to connect to the external API:
+```bash
+CURATION_API_BASE_URL=http://localhost:8001
+```
+
+## Troubleshooting
+# ===============
+
+### Problem: Backend shows empty data
+**Solution**: The external API might not be running. Check:
+1. Is the external API running on port 8001?
+2. Run: `curl http://localhost:8001/sources/`
+3. If it fails, start the external API first
+
+### Problem: Frontend shows "No entities available"
+**Solution**: Check the backend logs for connection errors. The backend should show:
+```
+INFO:app:API data loaded - Sources: 2, Properties: 99, Editions: 762
+```
+
+### Problem: Port already in use
+**Solution**: Kill existing processes:
+```bash
+# Kill our backend
+pkill -f "python.*app"
+
+# Kill our frontend (if needed)
+pkill -f "npm.*dev"
+```
+
+## Quick Start Commands
+# ====================
+
+```bash
+# Terminal 1: Start external API (follow their instructions)
+
+# Terminal 2: Start our backend
+cd /Users/alihankaratasli/Desktop/Bachelorarbeit/Code/GitHub/data_curation_interface/backend
+source venv/bin/activate
+CURATION_API_BASE_URL=http://localhost:8001 python -c "import sys; sys.path.append('.'); from app import app; app.run(host='0.0.0.0', port=8000, debug=False)"
+
+# Terminal 3: Start our frontend
+cd /Users/alihankaratasli/Desktop/Bachelorarbeit/Code/GitHub/data_curation_interface/frontend
+npm run dev -- --port 4000
+```
+
+## Data Flow
+# ==========
+
+1. **External API** (port 8001) → Provides sources, properties, entities
+2. **Our Backend** (port 8000) → Fetches from external API, adds AI curation features
+3. **Our Frontend** (port 4000) → User interface for data curation
+
+## Success Indicators
+# ==================
+
+✅ External API: `curl http://localhost:8001/sources/` returns JSON data
+✅ Our Backend: Shows "API data loaded - Sources: 2, Properties: 99, Editions: 762"
+✅ Our Frontend: Shows entity dropdown with 762 entities available
+✅ Interface: Can select entities, scrape content, and curate metadata
+
+---
+Last Updated: September 29, 2025

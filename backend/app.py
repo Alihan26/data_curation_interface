@@ -159,8 +159,8 @@ def _fetch_api_data() -> None:
                             "id": entity.get("id"),
                             "source_id": source["id"],
                             "source_internal_id": entity.get("source_internal_id", ""),
-                            "entity_name": entity.get("entity_name", "Unknown Entity"),
-                            "entity_description": entity.get("entity_description", ""),
+                            "entity_name": entity.get("source_internal_id", f"Entity {entity.get('id')}"),
+                            "entity_description": f"Entity from {source.get('name', 'Unknown Source')}",
                             "is_dummy": False
                         })
                 except Exception as e:
@@ -720,54 +720,151 @@ def fetch_html(url):
 def health_check():
     return jsonify({"status": "healthy"})
 
-@app.route('/api/process-curation', methods=['POST'])
-def process_curation():
+# Test endpoint removed - new endpoints are working correctly
+
+@app.route('/api/entities/<int:entity_id>/scrape', methods=['POST'])
+def scrape_entity_content(entity_id: int):
+    """
+    Unified endpoint for scraping entity content and generating suggestions.
+    
+    This replaces the old /api/process-curation endpoint with a more RESTful design.
+    Automatically determines URLs based on entity, scrapes content, and optionally
+    generates AI suggestions based on the 'use_ai' parameter.
+    """
     try:
-        logger.info("Processing curation request")
+        logger.info(f"Scraping content for entity {entity_id}")
         data = request.get_json()
         if not data:
             return jsonify({"error": "No JSON data provided"}), 400
 
-        entity_name = data.get('entity_name', '')
-        source_name = data.get('source_name', '')
-        urls = data.get('urls', [])
-        # Start with empty suggestions - they should be generated on-demand
-        suggestions = []
-        logger.info("Starting with empty suggestions - will be populated based on processing mode")
+        # Find the entity
+        entity = next((e for e in DATA["editions"] if e["id"] == entity_id), None)
+        if not entity:
+            return jsonify({"error": "Entity not found"}), 404
+        
+        # Find the source
+        source = next((s for s in DATA["sources"] if s["id"] == entity["source_id"]), None)
+        if not source:
+            return jsonify({"error": "Source not found"}), 404
+
+        # Determine URLs based on entity
+        urls = []
+        if entity["entity_name"] == "Martha Ballard's Diary Online":
+            urls = ['https://dohistory.org/diary/about.html']
+        elif entity["entity_name"] == "Atharvaveda Paippalāda":
+            urls = ['https://www.atharvavedapaippalada.uzh.ch/en.html']
+        elif not entity.get("is_dummy", True):  # Real entity from external API
+            # For real entities, we don't have URLs - use placeholder content
+            urls = []  # Will generate placeholder content
+        else:
+            # Use provided URLs or default
+            urls = data.get('urls', ['https://www.atharvavedapaippalada.uzh.ch/en.html'])
 
         # Check if AI suggestions are requested
         use_ai = data.get('use_ai', False)
+        
+        # Start with empty suggestions - they will be populated if AI is enabled
+        suggestions = []
+        logger.info(f"Processing entity '{entity['entity_name']}' with AI={'enabled' if use_ai else 'disabled'}")
 
         pages_data = []
-        for url in urls:
+        
+        if not urls:  # Real entity from external API - fetch URL from existing suggestions
+            # Get the entity's existing suggestions from the external API
             try:
-                logger.info(f"Fetching HTML from: {url}")
-                html = fetch_html(url)
-                soup = BeautifulSoup(html, "html.parser")
-                title = soup.title.string if soup.title else url
-                text_content = soup.get_text()
-                text_content = ' '.join(text_content.split())
-
-                if len(text_content) > 5000:
-                    text_content = text_content[:5000] + "... [Content truncated]"
-
-                pages_data.append({
-                    "url": url,
-                    "title": title,
-                    "text_content": text_content,
-                    "char_count": len(text_content),
-                    "word_count": len(text_content.split())
-                })
-                logger.info(f"Successfully processed page: {title[:50]}...")
+                if curation_client:
+                    logger.info(f"Fetching existing suggestions for entity {entity['entity_name']} from external API")
+                    # Make direct HTTP request to get curation data with higher entity limit
+                    import requests
+                    api_base_url = os.getenv('CURATION_API_BASE_URL', 'http://localhost:8001')
+                    curation_url = f"{api_base_url}/sources/{source['id']}/curation-data?entity_limit=1000"
+                    response = requests.get(curation_url)
+                    response.raise_for_status()
+                    curation_data = response.json()
+                    
+                    # Find this entity in the curation data
+                    entity_data = None
+                    for api_entity in curation_data.get('entities', []):
+                        if api_entity.get('source_internal_id') == entity.get('source_internal_id'):
+                            entity_data = api_entity
+                            break
+                    
+                    if entity_data and entity_data.get('existing_suggestions'):
+                        # Look for URL suggestion (property_id: 2 is "URL")
+                        url_suggestion = None
+                        for suggestion in entity_data['existing_suggestions']:
+                            if suggestion.get('property_name') == 'URL' or suggestion.get('property_id') == 2:
+                                url_suggestion = suggestion
+                                break
+                        
+                        if url_suggestion and url_suggestion.get('custom_value'):
+                            real_url = url_suggestion['custom_value']
+                            logger.info(f"Found real URL for entity {entity['entity_name']}: {real_url}")
+                            urls = [real_url]
+                        else:
+                            logger.warning(f"No URL found in suggestions for entity {entity['entity_name']}")
+                    else:
+                        logger.warning(f"No existing suggestions found for entity {entity['entity_name']}")
+                        
             except Exception as e:
-                logger.error(f"Error processing URL {url}: {str(e)}")
+                logger.error(f"Failed to fetch suggestions for entity {entity['entity_name']}: {e}")
+            
+            # If we still don't have URLs, generate placeholder content
+            if not urls:
+                placeholder_content = f"""
+                Entity Information:
+                - Entity: {entity['entity_name']}
+                - Source: {source['name']}
+                - Source ID: {entity.get('source_internal_id', 'N/A')}
+                - Database ID: {entity['id']}
+                
+                This is a real entity from the external metadata curation API. 
+                No URL was found in the existing suggestions for this entity.
+                
+                You can still curate metadata for this entity manually or with AI suggestions.
+                The AI will work with this placeholder content to generate suggestions.
+                """
+                
                 pages_data.append({
-                    "url": url,
-                    "title": f"Error: {str(e)}",
-                    "text_content": f"Failed to fetch: {str(e)}",
-                    "char_count": 0,
-                    "word_count": 0
+                    "url": f"placeholder://entity-{entity['id']}",
+                    "title": f"Entity: {entity['entity_name']}",
+                    "text_content": placeholder_content.strip(),
+                    "char_count": len(placeholder_content),
+                    "word_count": len(placeholder_content.split())
                 })
+                logger.info(f"Generated placeholder content for real entity (no URL found): {entity['entity_name']}")
+        
+        if urls:
+            # URL scraping for entities (both dummy and real entities with URLs)
+            for url in urls:
+                try:
+                    logger.info(f"Fetching HTML from: {url}")
+                    html = fetch_html(url)
+                    soup = BeautifulSoup(html, "html.parser")
+                    title = soup.title.string if soup.title else url
+                    text_content = soup.get_text()
+                    text_content = ' '.join(text_content.split())
+
+                    if len(text_content) > 5000:
+                        text_content = text_content[:5000] + "... [Content truncated]"
+
+                    pages_data.append({
+                        "url": url,
+                        "title": title,
+                        "text_content": text_content,
+                        "char_count": len(text_content),
+                        "word_count": len(text_content.split())
+                    })
+                    logger.info(f"Successfully processed page: {title[:50]}...")
+                except Exception as e:
+                    logger.error(f"Error processing URL {url}: {str(e)}")
+                    pages_data.append({
+                        "url": url,
+                        "title": f"Error: {str(e)}",
+                        "text_content": f"Failed to fetch: {str(e)}",
+                        "char_count": 0,
+                        "word_count": 0
+                    })
 
         # Initialize ai_suggestions variable
         ai_suggestions = []
@@ -783,24 +880,9 @@ def process_curation():
             if pages_data:
                 logger.info(f"DEBUG: First page text length: {len(pages_data[0].get('text_content', ''))}")
             
-            # Determine source and edition IDs dynamically
-            selected_source_id = data.get('source_id')
-            selected_edition_id = data.get('edition_id')
-            
-            # If not specified, use the first available source
-            if not selected_source_id:
-                if not DATA["sources"]:
-                    logger.error("No sources available in the system")
-                    return jsonify({"error": "No sources available in the system"}), 500
-                selected_source_id = DATA["sources"][0]["id"]
-            
-            if not selected_edition_id:
-                # Find first edition for the selected source
-                source_editions = [e for e in DATA["editions"] if e["source_id"] == selected_source_id]
-                if not source_editions:
-                    logger.error(f"No editions found for source_id: {selected_source_id}")
-                    return jsonify({"error": f"No editions found for source_id: {selected_source_id}"}), 404
-                selected_edition_id = source_editions[0]["id"]
+            # Use the entity and source IDs from the request
+            selected_source_id = source["id"]
+            selected_edition_id = entity_id
             
             logger.info(f"Using source_id: {selected_source_id}, edition_id: {selected_edition_id}")
             
@@ -971,102 +1053,40 @@ def process_curation():
         if use_ai and ai_suggestions:
             logger.info(f"AI Processing: {len(pages_data)} pages, {len(ai_suggestions)} AI suggestions generated")
         else:
-            logger.info(f"Manual Processing: {len(pages_data)} pages, {len(suggestions)} existing suggestions")
+            logger.info(f"Manual Processing: {len(pages_data)} pages, ready for manual curation")
+        
+        import datetime as dt
         
         return jsonify({
             "success": True,
-            "entity_name": entity_name,
-            "source_name": source_name,
-            "pages": pages_data,
-            "suggestions": suggestions
+            "entity": {
+                "id": entity_id,
+                "name": entity["entity_name"],
+                "description": entity["entity_description"],
+                "source_id": entity["source_id"]
+            },
+            "source": {
+                "id": source["id"],
+                "name": source["name"]
+            },
+            "scraped_content": {
+                "pages": pages_data,
+                "total_pages": len(pages_data),
+                "scraped_at": dt.datetime.now(dt.timezone.utc).isoformat()
+            },
+            "suggestions": {
+                "items": suggestions,
+                "total_count": len(suggestions),
+                "ai_generated": len([s for s in suggestions if s.get('ai_generated', False)]),
+                "manual_required": len(DATA["properties"]) - len([s for s in suggestions if s.get('ai_generated', False)]) if use_ai else len(DATA["properties"])
+            }
         })
     except Exception as e:
-        logger.error(f"Unexpected error in process_curation: {str(e)}")
+        logger.error(f"Unexpected error in scrape_entity_content: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 
-@app.route('/api/pages/<int:page_index>/highlights', methods=['GET'])
-def get_page_highlights(page_index: int):
-    """
-    Get highlights and evidence for a specific page.
-    
-    Returns:
-        - Page content with highlighted evidence
-        - Suggestions associated with this page
-        - Evidence validation status
-    """
-    
-    # Get page data from the request (in a real system, this would be stored)
-    # For now, we'll return the highlights based on suggestions
-    source_id = request.args.get('source_id', type=int)
-    edition_id = request.args.get('edition_id', type=int)
-    
-    if not source_id or not edition_id:
-        return jsonify({"error": "source_id and edition_id are required"}), 400
-    
-    # Get suggestions for this source/edition
-    suggestions = [s for s in DATA["suggestions"] 
-                   if s["source_id"] == source_id and s["edition_id"] == edition_id]
-    
-    # Filter suggestions that have evidence and are for this page
-    page_suggestions = []
-    for suggestion in suggestions:
-        if suggestion.get("evidence") and suggestion.get("page_url"):
-            page_suggestions.append({
-                "id": suggestion["id"],
-                "property_id": suggestion["property_id"],
-                "property_name": _get_property_name(suggestion["property_id"]),
-                "evidence": suggestion["evidence"],
-                "confidence": suggestion.get("confidence", 0),
-                "status": suggestion.get("status", "pending"),
-                "highlight_text": suggestion.get("evidence", {}).get("content", "")[:100] + "..." if suggestion.get("evidence", {}).get("content") else ""
-            })
-    
-    return jsonify({
-        "page_index": page_index,
-        "highlights_count": len(page_suggestions),
-        "highlights": page_suggestions
-    })
-
-
-@app.route('/api/pages/navigation', methods=['GET'])
-def get_page_navigation():
-    """
-    Get page navigation information for the current curation session.
-    
-    Returns:
-        - Total pages count
-        - Current page index
-        - Navigation state
-        - Page titles and URLs
-    """
-    
-    source_id = request.args.get('source_id', type=int)
-    edition_id = request.args.get('edition_id', type=int)
-    
-    if not source_id or not edition_id:
-        return jsonify({"error": "source_id and edition_id are required"}), 400
-    
-    # In a real system, this would come from the current session
-    # For now, we'll return a mock navigation structure
-    navigation_data = {
-        "total_pages": 1,  # This would be dynamic based on the session
-        "current_page": 0,
-        "pages": [
-            {
-                "index": 0,
-                "title": "Sample Page",
-                "url": "https://example.com",
-                "has_highlights": True,
-                "highlights_count": 0
-            }
-        ],
-        "navigation_enabled": True,
-        "can_go_previous": False,
-        "can_go_next": False
-    }
-    
-    return jsonify(navigation_data)
+# Removed old page-specific endpoints - no longer needed with unified interface
 
 
 @app.route('/api/fetch-external')

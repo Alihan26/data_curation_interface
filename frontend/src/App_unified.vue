@@ -18,13 +18,13 @@
               <div class="user-role">Data Curator</div>
             </div>
             <button @click="showUserMenu = !showUserMenu" class="user-menu-btn">
-              <img src="/src/assets/icons/setting.png" alt="Settings" class="icon-img">
+              <span class="icon">⚙️</span>
             </button>
           </div>
 
           <div v-if="showUserMenu" class="user-dropdown" @click.stop>
             <div class="dropdown-item" @click="showSettings">
-              <img src="/src/assets/icons/setting.png" alt="Settings" class="icon-img">
+              <span class="icon">⚙️</span>
               Settings
             </div>
             <div class="dropdown-item" @click="showHelp">
@@ -41,13 +41,14 @@
       </div>
     </header>
 
-    <!-- Control Panel - Fixed Layout -->
+    <!-- Unified Control Panel -->
     <div class="control-panel">
-      <div class="control-grid">
-        <!-- Column 1: Entity -->
-        <div class="control-col col-entity">
-          <label>Select Entity:</label>
+      <div class="control-row">
+        <!-- Entity Selection -->
+        <div class="control-group">
+          <label for="entity-select">Select Entity:</label>
           <select 
+            id="entity-select" 
             v-model="selectedEntityId" 
             @change="onEntityChange"
             :disabled="isLoading"
@@ -65,69 +66,42 @@
             </optgroup>
           </select>
         </div>
-        
-        <!-- Column 2: AI Toggle -->
-        <div class="control-col col-ai">
-          <label class="ai-label">
+
+        <!-- AI Toggle -->
+        <div class="control-group">
+          <label class="ai-toggle-label">
             <input 
               type="checkbox" 
               v-model="useAI" 
-              :disabled="isLoading || !selectedEntityId || curationStarted"
               @change="onAIToggleChange"
+              :disabled="isLoading || !selectedEntityId"
               class="ai-checkbox"
             >
-              Use AI Suggestions
-            </label>
-          <div class="ai-desc">{{ useAI ? 'AI enabled' : 'AI disabled' }}</div>
-          </div>
-          
-        <!-- Column 3: Confidence -->
-        <div class="control-col col-confidence">
-          <label>Confidence: {{ confidenceThreshold }}%</label>
-            <input 
-              type="range" 
-              min="0" 
-              max="100" 
-              step="5" 
-            v-model.number="confidenceThreshold" 
-            :disabled="isLoading || curationStarted || !useAI"
-            class="confidence-slider"
-            >
-          <small>{{ useAI ? `≥ ${confidenceThreshold}% threshold` : 'AI disabled' }}</small>
-          </div>
-          
-        <!-- Column 4: Action -->
-        <div class="control-col col-action">
-          <button 
-            v-if="selectedEntityId && scrapedContent.pages.length > 0"
-            @click="startCuration" 
-            :disabled="isLoading || curationStarted"
-            class="start-btn"
-            :class="{ 'ai-mode': useAI, 'manual-mode': !useAI }"
-          >
-            {{ curationStarted ? 'Active' : 'Start' }}
-          </button>
-          <div v-else class="start-placeholder">Select entity</div>
-          </div>
-          
-        <!-- Column 5: Status -->
-        <div class="control-col col-status">
-          <div class="status-pill" :class="statusClass">
-            <span class="status-dot"></span>
-            <span>{{ statusText }}</span>
+            <span class="ai-toggle-text">Use AI Suggestions</span>
+          </label>
+          <div v-if="useAI" class="ai-info">
+            AI will analyze scraped content and suggest values
           </div>
         </div>
-            </div>
-            </div>
-          
-    <!-- Loading Indicator -->
-    <div v-if="isLoading" class="loading-indicator">
-      <div class="loading-spinner"></div>
-      <div class="loading-text">
-        {{ useAI ? 'Scraping content and generating AI suggestions...' : 'Scraping content for manual curation...' }}
-            </div>
+
+        <!-- Status Indicator -->
+        <div class="control-group status-group">
+          <div class="status-indicator" :class="statusClass">
+            <span class="status-dot"></span>
+            <span class="status-text">{{ statusText }}</span>
           </div>
-          
+        </div>
+      </div>
+
+      <!-- Loading Indicator -->
+      <div v-if="isLoading" class="loading-indicator">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">
+          {{ useAI ? 'Scraping content and generating AI suggestions...' : 'Scraping content for manual curation...' }}
+        </div>
+      </div>
+    </div>
+
     <!-- Main Content Area -->
     <div class="main-content">
       <!-- Left Side: Scraped Content -->
@@ -139,17 +113,15 @@
             <span v-if="scrapedContent.scraped_at" class="scraped-time">
               {{ formatTime(scrapedContent.scraped_at) }}
             </span>
-              </div>
-            </div>
-            
-        <div v-if="!selectedEntityId" class="empty-state">
-          <div class="empty-icon">
-            <img src="/src/assets/icons/paper.png" alt="Document" class="icon-img">
           </div>
+        </div>
+        
+        <div v-if="!selectedEntityId" class="empty-state">
+          <div class="empty-icon">📄</div>
           <h3>Select an Entity to Begin</h3>
           <p>Choose an entity from the dropdown above to start scraping content and curating metadata.</p>
-    </div>
-
+        </div>
+        
         <div v-else-if="!scrapedContent.pages || scrapedContent.pages.length === 0" class="empty-state">
           <div class="empty-icon">⏳</div>
           <h3>No Content Yet</h3>
@@ -159,34 +131,34 @@
         <div v-else class="content-display">
           <!-- Page Navigation -->
           <div v-if="scrapedContent.pages.length > 1" class="page-navigation">
-          <button 
-            @click="previousPage" 
-            :disabled="currentPageIndex === 0"
+            <button 
+              @click="previousPage" 
+              :disabled="currentPageIndex === 0"
               class="nav-btn"
-          >
+            >
               ← Previous
-          </button>
-          <span class="page-counter">
+            </button>
+            <span class="page-counter">
               Page {{ currentPageIndex + 1 }} of {{ scrapedContent.pages.length }}
-          </span>
-          <button 
-            @click="nextPage" 
+            </span>
+            <button 
+              @click="nextPage" 
               :disabled="currentPageIndex === scrapedContent.pages.length - 1"
               class="nav-btn"
-          >
+            >
               Next →
-          </button>
-        </div>
-        
+            </button>
+          </div>
+          
           <!-- Current Page Content -->
           <div v-if="currentPage" class="page-content">
             <h3 class="page-title">{{ currentPage.title }}</h3>
             <div class="page-url">{{ currentPage.url }}</div>
-          <div class="content-text" v-html="highlightedContent"></div>
-        </div>
-            </div>
+            <div class="content-text" v-html="highlightedContent"></div>
           </div>
-          
+        </div>
+      </div>
+
       <!-- Right Side: Metadata Fields (Always Visible) -->
       <div class="metadata-panel">
         <div class="panel-header">
@@ -194,30 +166,21 @@
           <div v-if="selectedSource" class="metadata-stats">
             {{ selectedSource.name }}
             <span class="field-count">{{ metadataFields.length }} fields</span>
-            </div>
           </div>
-          
+        </div>
+        
         <div v-if="!selectedEntityId" class="empty-state">
-          <div class="empty-icon">
-            <img src="/src/assets/icons/checklist.png" alt="Checklist" class="icon-img">
-                          </div>
+          <div class="empty-icon">📋</div>
           <h3>Metadata Fields</h3>
           <p>Select an entity to see metadata fields for curation.</p>
-                  </div>
-                  
+        </div>
+        
         <div v-else class="metadata-content">
           <!-- Mode Indicator -->
-          <div v-if="curationStarted" class="mode-indicator" :class="useAI ? 'ai-mode' : 'manual-mode'">
+          <div class="mode-indicator" :class="useAI ? 'ai-mode' : 'manual-mode'">
             <span class="mode-icon">{{ useAI ? '🤖' : '✍️' }}</span>
             <span class="mode-text">{{ useAI ? 'AI Suggestion Mode' : 'Manual Curation Mode' }}</span>
-            <span v-if="useAI" class="threshold-info">Threshold: {{ confidenceThreshold }}%</span>
-                </div>
-
-          <!-- Pre-Curation Info -->
-          <div v-else-if="scrapedContent.pages.length > 0" class="pre-curation-info">
-            <img src="/src/assets/icons/checklist.png" alt="Info" class="info-icon-img">
-            <span class="info-text">Content scraped. Click "Start Curation" to begin metadata entry.</span>
-                </div>
+          </div>
 
           <!-- Metadata Fields List -->
           <div class="metadata-fields">
@@ -239,36 +202,25 @@
                 <div class="field-badges">
                   <span v-if="field.is_required" class="required-badge">Required</span>
                   <span class="field-type-badge">{{ field.type }}</span>
-                  <span v-if="field.showAISuggestion" class="ai-badge">AI</span>
-                  <span v-if="field.showAISuggestion && field.aiSuggestion.confidence" class="confidence-badge">
+                  <span v-if="field.aiSuggestion" class="ai-badge">AI</span>
+                  <span v-if="field.aiSuggestion && field.aiSuggestion.confidence" class="confidence-badge">
                     {{ Math.round(field.aiSuggestion.confidence * 100) }}%
-                      </span>
-                  <span v-if="!curationStarted" class="preview-badge">Preview</span>
-                    </div>
-                  </div>
-                  
-              <!-- Pre-Curation Preview (just show field names and types) -->
-              <div v-if="!curationStarted" class="field-preview">
-                <div class="preview-info">
-                  <span class="field-description">{{ field.type.replace('_', ' ').toLowerCase() }} field</span>
-                  <span v-if="field.property_options && field.property_options.length" class="options-count">
-                    {{ field.property_options.length }} options available
                   </span>
-                    </div>
-                  </div>
+                </div>
+              </div>
 
-              <!-- AI Suggestion Section (when curation started, AI enabled, and suggestion exists) -->
-              <div v-else-if="curationStarted && field.showAISuggestion" class="ai-suggestion-section">
+              <!-- AI Suggestion Section (when AI is enabled and suggestion exists) -->
+              <div v-if="useAI && field.aiSuggestion" class="ai-suggestion-section">
                 <div class="suggestion-value">
                   <strong>AI Suggested Value:</strong>
                   <span class="suggested-value">{{ renderSuggestionValue(field.aiSuggestion) }}</span>
                 </div>
-
+                
                 <div v-if="field.aiSuggestion.evidence" class="suggestion-evidence">
                   <strong>Evidence:</strong>
                   <span class="evidence-text">{{ getSuggestionEvidence(field.aiSuggestion) }}</span>
                 </div>
-
+                
                 <div v-if="field.aiSuggestion.reasoning" class="suggestion-reasoning">
                   <strong>AI Reasoning:</strong>
                   <span class="reasoning-text">{{ getSuggestionReasoning(field.aiSuggestion) }}</span>
@@ -279,14 +231,14 @@
                   <button 
                     v-if="field.aiSuggestion.status === 'pending'"
                     @click.stop="acceptSuggestion(field.aiSuggestion)"
-                    class="action-btn accept-btn" 
+                    class="action-btn accept-btn"
                   >
                     Accept
                   </button>
                   <button 
                     v-if="field.aiSuggestion.status === 'pending'"
                     @click.stop="rejectSuggestion(field.aiSuggestion)"
-                    class="action-btn reject-btn" 
+                    class="action-btn reject-btn"
                   >
                     Reject
                   </button>
@@ -299,12 +251,12 @@
                   </button>
                   <div v-else class="status-display" :class="getStatusClass(field.aiSuggestion)">
                     {{ field.aiSuggestion.status.toUpperCase() }}
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-          
-              <!-- Manual Entry Section (only when curation started and field needs manual entry) -->
-              <div v-else-if="curationStarted && field.needsManualEntry" class="manual-entry-section">
+
+              <!-- Manual Entry Section (always visible for manual mode, or when no AI suggestion) -->
+              <div v-if="!useAI || !field.aiSuggestion || field.aiSuggestion.status === 'rejected'" class="manual-entry-section">
                 <!-- Choice-based fields -->
                 <div v-if="isChoiceField(field)" class="field-input">
                   <label>Select Value:</label>
@@ -331,7 +283,7 @@
                     v-if="field.type === 'NUMERICAL'"
                     v-model="field.manualValue"
                     @input="onManualValueChange(field)"
-                    type="number" 
+                    type="number"
                     class="form-input"
                     :placeholder="`Enter ${field.name.toLowerCase()}`"
                   >
@@ -363,28 +315,28 @@
                   </button>
                 </div>
               </div>
-                </div>
-              </div>
-              
-            <!-- Bulk Actions (only when curation started and AI suggestions exist) -->
-          <div v-if="curationStarted && useAI && aiSuggestions.length > 0" class="bulk-actions">
-                <button 
+            </div>
+          </div>
+
+          <!-- Bulk Actions (only when AI suggestions exist) -->
+          <div v-if="useAI && aiSuggestions.length > 0" class="bulk-actions">
+            <button 
               @click="bulkAcceptAll"
               :disabled="!hasPendingSuggestions"
               class="bulk-btn accept-all-btn"
             >
               Accept All Pending ({{ pendingSuggestionsCount }})
-                </button>
-                <button 
+            </button>
+            <button 
               @click="bulkRejectAll"
               :disabled="!hasPendingSuggestions"
               class="bulk-btn reject-all-btn"
             >
               Reject All Pending ({{ pendingSuggestionsCount }})
-                </button>
-              </div>
-            </div>
+            </button>
           </div>
+        </div>
+      </div>
     </div>
 
     <!-- Edit Suggestion Modal -->
@@ -471,8 +423,6 @@ export default {
       useAI: false,
       isLoading: false,
       showUserMenu: false,
-      confidenceThreshold: 70,
-      curationStarted: false,
       
       // Content data
       scrapedContent: {
@@ -509,28 +459,10 @@ export default {
         // Find AI suggestion for this property
         const aiSuggestion = this.aiSuggestions.find(s => s.property_id === property.id)
         
-        // Determine if this field should show AI suggestion or manual entry
-        let showAISuggestion = false
-        let needsManualEntry = true
-        
-        if (this.curationStarted && this.useAI && aiSuggestion) {
-          const confidence = (aiSuggestion.confidence || 0) * 100
-          showAISuggestion = confidence >= this.confidenceThreshold
-          needsManualEntry = !showAISuggestion
-        } else if (this.curationStarted && !this.useAI) {
-          needsManualEntry = true
-        } else {
-          // Before curation starts, don't show interactive fields
-          needsManualEntry = false
-        }
-        
         return {
           ...property,
-          aiSuggestion: showAISuggestion ? aiSuggestion : null,
-          manualValue: this.manualValues[property.id] || '',
-          showAISuggestion,
-          needsManualEntry,
-          isInteractive: this.curationStarted
+          aiSuggestion: aiSuggestion || null,
+          manualValue: this.manualValues[property.id] || ''
         }
       })
     },
@@ -540,23 +472,7 @@ export default {
     },
     
     pendingSuggestionsCount() {
-      if (!this.curationStarted || !this.useAI) return 0
-      
-      // Only count suggestions that meet the confidence threshold
-      return this.aiSuggestions.filter(s => {
-        const confidence = (s.confidence || 0) * 100
-        return s.status === 'pending' && confidence >= this.confidenceThreshold
-      }).length
-    },
-    
-    filteredAISuggestions() {
-      if (!this.useAI || !this.curationStarted) return []
-      
-      // Filter AI suggestions by confidence threshold
-      return this.aiSuggestions.filter(s => {
-        const confidence = (s.confidence || 0) * 100
-        return confidence >= this.confidenceThreshold
-      })
+      return this.aiSuggestions.filter(s => s.status === 'pending').length
     },
     
     isEditValid() {
@@ -669,57 +585,14 @@ export default {
       console.log('Selected entity:', this.selectedEntity.entity_name)
       console.log('Selected source:', this.selectedSource.name)
       
-      // Reset curation state when entity changes
-      this.curationStarted = false
-      
-      // Start scraping immediately (but don't start curation yet)
+      // Start scraping immediately
       await this.scrapeContent()
     },
     
     async onAIToggleChange() {
-      // Reset curation state when AI mode changes
-      this.curationStarted = false
-      
       if (this.selectedEntityId) {
         // Re-scrape with new AI setting
         await this.scrapeContent()
-      }
-    },
-    
-    async startCuration() {
-      if (!this.selectedEntityId || !this.scrapedContent.pages.length) return
-      
-      this.isLoading = true
-      this.statusText = this.useAI ? 'Generating AI suggestions...' : 'Preparing manual curation...'
-      this.statusClass = 'status-loading'
-      
-      try {
-        if (this.useAI) {
-          // Generate AI suggestions with current confidence threshold
-          const response = await axios.post(`/api/entities/${this.selectedEntityId}/scrape`, {
-            use_ai: true
-        })
-        
-        if (response.data.success) {
-            this.aiSuggestions = response.data.suggestions.items || []
-            console.log(`AI suggestions generated: ${this.aiSuggestions.length}`)
-          }
-        }
-        
-        // Start curation mode
-        this.curationStarted = true
-        this.statusText = this.useAI ? 
-          `AI curation active - ${this.aiSuggestions.length} suggestions generated` :
-          'Manual curation active'
-        this.statusClass = 'status-success'
-        
-      } catch (error) {
-        console.error('Failed to start curation:', error)
-        this.statusText = 'Failed to start curation'
-        this.statusClass = 'status-error'
-        alert(`Failed to start curation: ${error.response?.data?.error || error.message}`)
-      } finally {
-        this.isLoading = false
       }
     },
     
@@ -727,29 +600,31 @@ export default {
       if (!this.selectedEntityId) return
       
       this.isLoading = true
-      this.statusText = 'Scraping content...'
+      this.statusText = this.useAI ? 'Scraping & AI Processing...' : 'Scraping Content...'
       this.statusClass = 'status-loading'
       
       try {
-        // Always scrape without AI initially - AI suggestions will be generated when curation starts
         const response = await axios.post(`/api/entities/${this.selectedEntityId}/scrape`, {
-          use_ai: false
+          use_ai: this.useAI
         })
         
         if (response.data.success) {
           this.scrapedContent = response.data.scraped_content
+          this.aiSuggestions = response.data.suggestions.items || []
           this.currentPageIndex = 0
           
-          // Clear previous state
-          this.aiSuggestions = []
+          // Reset manual values when switching modes
           this.manualValues = {}
           
-          this.statusText = `Scraped ${this.scrapedContent.total_pages} pages - Ready to start curation`
+          this.statusText = this.useAI ? 
+            `Scraped ${this.scrapedContent.total_pages} pages, ${this.aiSuggestions.length} AI suggestions` :
+            `Scraped ${this.scrapedContent.total_pages} pages - Ready for manual curation`
           this.statusClass = 'status-success'
           
           console.log('Scraping completed:', {
             pages: this.scrapedContent.total_pages,
-            ready_for_curation: true
+            ai_suggestions: this.aiSuggestions.length,
+            ai_enabled: this.useAI
           })
         }
       } catch (error) {
@@ -763,14 +638,13 @@ export default {
     },
     
     resetState() {
-        this.selectedEntity = null
+      this.selectedEntity = null
       this.selectedSource = null
       this.scrapedContent = { pages: [], total_pages: 0, scraped_at: null }
       this.aiSuggestions = []
       this.manualValues = {}
-        this.currentPageIndex = 0
+      this.currentPageIndex = 0
       this.activeHighlightId = null
-      this.curationStarted = false
       this.statusText = 'Ready'
       this.statusClass = 'status-ready'
     },
@@ -919,22 +793,22 @@ export default {
       if (!value) return
       
       try {
-            const payload = {
+        const payload = {
           source_id: this.selectedSource.id,
           edition_id: this.selectedEntity.id,
           property_id: field.id,
-              evidence: {
+          evidence: {
             content: `Manual entry by curator`,
-                source_url: window.location.href,
+            source_url: window.location.href,
             confidence: 1.0,
-                extraction_method: 'manual'
-              }
-            }
-            
+            extraction_method: 'manual'
+          }
+        }
+        
         if (this.isChoiceField(field)) {
-                payload.property_option_id = value
-              } else {
-                payload.custom_value = value
+          payload.property_option_id = value
+        } else {
+          payload.custom_value = value
         }
         
         const response = await axios.post('/api/manual-metadata', payload)
@@ -954,44 +828,44 @@ export default {
     clearManualField(field) {
       field.manualValue = ''
       this.manualValues[field.id] = ''
-     },
-     
-     // Edit modal methods
-     closeEditModal() {
-       this.showEditModal = false
-       this.editingSuggestion = null
-     },
-     
-     async saveEditedSuggestion() {
-       if (!this.editingSuggestion) return
-       
-       try {
-         const payload = {
-           note: this.editingSuggestion.curator_note || 'Edited by curator'
-         }
-         
-         const property = this.properties.find(p => p.id === this.editingSuggestion.property_id)
-         if (property) {
+    },
+    
+    // Edit modal methods
+    closeEditModal() {
+      this.showEditModal = false
+      this.editingSuggestion = null
+    },
+    
+    async saveEditedSuggestion() {
+      if (!this.editingSuggestion) return
+      
+      try {
+        const payload = {
+          note: this.editingSuggestion.curator_note || 'Edited by curator'
+        }
+        
+        const property = this.properties.find(p => p.id === this.editingSuggestion.property_id)
+        if (property) {
           if (['MULTIPLE_CHOICE', 'SINGLE_CHOICE', 'BINARY'].includes(property.type)) {
-             payload.property_option_id = this.editingSuggestion.property_option_id
-           } else {
-             payload.custom_value = this.editingSuggestion.custom_value
-           }
-         }
-         
-         const response = await axios.put(`/api/suggestions/${this.editingSuggestion.id}/edit`, payload)
-         
-         if (response.data.success) {
+            payload.property_option_id = this.editingSuggestion.property_option_id
+          } else {
+            payload.custom_value = this.editingSuggestion.custom_value
+          }
+        }
+        
+        const response = await axios.put(`/api/suggestions/${this.editingSuggestion.id}/edit`, payload)
+        
+        if (response.data.success) {
           const index = this.aiSuggestions.findIndex(s => s.id === this.editingSuggestion.id)
-           if (index !== -1) {
+          if (index !== -1) {
             this.aiSuggestions[index] = response.data.suggestion
-           }
-           
-           console.log('Suggestion edited successfully')
-           this.closeEditModal()
-         }
-       } catch (error) {
-         console.error('Failed to edit suggestion:', error)
+          }
+          
+          console.log('Suggestion edited successfully')
+          this.closeEditModal()
+        }
+      } catch (error) {
+        console.error('Failed to edit suggestion:', error)
         alert(`Failed to edit suggestion: ${error.response?.data?.error || error.message}`)
       }
     },
@@ -1026,7 +900,6 @@ export default {
       if (confirm('Are you sure you want to logout?')) {
         this.resetState()
         this.selectedEntityId = null
-        this.curationStarted = false
         alert('Logged out successfully.')
       }
     }
@@ -1062,22 +935,17 @@ export default {
   box-sizing: border-box;
 }
 
-html, body {
-  height: 100%;
-  margin: 0;
-  padding: 0;
+body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   line-height: 1.6;
   color: #333;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  background-attachment: fixed;
+  background-color: #f8f9fa;
 }
 
 #app {
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
 }
 
 /* Header styles */
@@ -1199,65 +1067,47 @@ html, body {
   margin: 0.5rem 0;
 }
 
-/* Control Panel - Rock Solid Layout */
+/* Control panel */
 .control-panel {
-  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-  padding: 1rem 2rem;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-  border-bottom: 1px solid #f0f0f0;
-  flex-shrink: 0;
+  background: white;
+  padding: 1.5rem 2rem;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  border-bottom: 1px solid #eee;
 }
 
-.control-grid {
-  display: grid;
-  grid-template-columns: 520px 220px 360px 180px auto; /* status column auto-sizes */
-  gap: 1.5rem;
+.control-row {
+  display: flex;
   align-items: center;
-  max-width: 1600px;
+  gap: 2rem;
+  flex-wrap: wrap;
+  max-width: 1400px;
   margin: 0 auto;
-  height: 80px; /* Fixed height prevents any vertical movement */
 }
 
-/* Fixed column widths */
-.entity-group { width: 520px; }
-.ai-group { width: 220px; height: 72px; justify-content: center; }
-.confidence-group { width: 480px; height: 72px; justify-content: center; overflow: hidden; }
-.action-group { width: 260px; height: 72px; justify-content: center; }
-.status-group { min-width: 220px; height: 72px; justify-content: center; align-items: center; white-space: nowrap; justify-self: end; }
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
 
-/* Confidence controls spacing */
-.confidence-controls { gap: 0.25rem; }
-
-/* Slider track styling to avoid thick black bar */
-.slider-input::-webkit-slider-runnable-track { height: 4px; border-radius: 2px; background: #e5e7eb; }
-.slider-input::-moz-range-track { height: 4px; border-radius: 2px; background: #e5e7eb; }
-
-.status-indicator { white-space: nowrap; }
+.control-group label {
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: #555;
+}
 
 .entity-select {
-  padding: 0.875rem 1rem;
-  border: 2px solid #e0e0e0;
-  border-radius: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 0.5rem;
   font-size: 1rem;
-  width: 520px; /* fixed desktop width for stability */
-  min-width: 520px;
-  max-width: 100%;
-  background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-}
-
-.entity-select:focus {
-  outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  min-width: 300px;
   background: white;
 }
 
 .entity-select:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-  background: #f5f5f5;
 }
 
 .ai-toggle-label {
@@ -1280,119 +1130,6 @@ html, body {
   font-size: 0.8rem;
   color: #666;
   font-style: italic;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: 0.75;
-}
-
-/* Confidence threshold slider */
-.slider-input {
-  width: 100%;
-  margin: 0.25rem 0;
-  height: 4px; /* slimmer */
-  border-radius: 2px;
-  background: #e5e7eb;
-  outline: none;
-  -webkit-appearance: none;
-}
-
-.slider-input::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  cursor: pointer;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-  transition: all 0.2s ease;
-}
-
-.slider-input::-webkit-slider-thumb:hover {
-  transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-}
-
-.slider-input::-moz-range-thumb {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  cursor: pointer;
-  border: none;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-}
-
-.confidence-info {
-  font-size: 0.8rem;
-  color: #666;
-  font-style: italic;
-  margin-top: 0.25rem;
-}
-
-/* Start curation button */
-.start-curation-btn {
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 0.5rem;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  min-width: 200px;
-}
-
-.start-curation-btn.ai-mode {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-}
-
-.start-curation-btn.ai-mode:hover:not(:disabled) {
-  background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-}
-
-.start-curation-btn.manual-mode {
-  background: linear-gradient(135deg, #9c27b0 0%, #673ab7 100%);
-  color: white;
-}
-
-.start-curation-btn.manual-mode:hover:not(:disabled) {
-  background: linear-gradient(135deg, #8e24aa 0%, #5e35b1 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(156, 39, 176, 0.3);
-}
-
-.start-curation-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none !important;
-  box-shadow: none !important;
-}
-
-.curation-status {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
-  font-weight: 500;
-  color: #2e7d32;
-}
-
-.status-icon {
-  font-size: 1.1rem;
-}
-
-.icon-img {
-  width: 16px;
-  height: 16px;
-  object-fit: contain;
-}
-
-.info-icon-img {
-  width: 14px;
-  height: 14px;
-  object-fit: contain;
-  margin-right: 0.5rem;
 }
 
 .status-group {
@@ -1406,7 +1143,6 @@ html, body {
   padding: 0.5rem 1rem;
   border-radius: 0.5rem;
   font-weight: 500;
-  white-space: nowrap; /* keep pill in single line */
 }
 
 .status-dot {
@@ -1463,21 +1199,18 @@ html, body {
   align-items: center;
   gap: 1rem;
   margin-top: 1rem;
-  padding: 1.25rem;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e3f2fd 100%);
-  border-radius: 0.75rem;
-  border: 1px solid #e3f2fd;
-  box-shadow: 0 2px 8px rgba(33, 150, 243, 0.1);
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 0.5rem;
 }
 
 .loading-spinner {
-  width: 24px;
-  height: 24px;
-  border: 3px solid #e0e0e0;
-  border-top: 3px solid #667eea;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #e0e0e0;
+  border-top: 2px solid #667eea;
   border-radius: 50%;
   animation: spin 1s linear infinite;
-  box-shadow: 0 0 10px rgba(102, 126, 234, 0.2);
 }
 
 @keyframes spin {
@@ -1493,36 +1226,30 @@ html, body {
 /* Main content */
 .main-content {
   display: grid;
-  grid-template-columns: 1.2fr 1fr;
-  gap: 1.5rem;
-  padding: 1.5rem;
-  max-width: 1600px;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  padding: 2rem;
+  max-width: 1400px;
   margin: 0 auto;
   flex: 1;
-  min-height: 0; /* Allow flex children to shrink */
-  overflow: hidden;
-  height: calc(100vh - 160px);
 }
 
 .content-panel, .metadata-panel {
   background: white;
   border-radius: 0.75rem;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-  border: 1px solid #f0f0f0;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
   display: flex;
   flex-direction: column;
-  height: 100%;
-  overflow: hidden;
+  height: fit-content;
+  max-height: 80vh;
 }
 
 .panel-header {
-  padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid #f0f0f0;
+  padding: 1.5rem;
+  border-bottom: 1px solid #eee;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-  border-radius: 0.75rem 0.75rem 0 0;
 }
 
 .panel-header h2 {
@@ -1553,86 +1280,56 @@ html, body {
 
 /* Empty state */
 .empty-state {
-  padding: 4rem 2rem;
+  padding: 3rem 2rem;
   text-align: center;
   color: #666;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  flex: 1;
 }
 
 .empty-icon {
-  font-size: 4rem;
-  margin-bottom: 1.5rem;
-  opacity: 0.6;
-  filter: grayscale(0.3);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.empty-icon .icon-img {
-  width: 64px;
-  height: 64px;
-  opacity: 0.6;
-  filter: grayscale(0.3);
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
 }
 
 .empty-state h3 {
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
   color: #333;
-  font-size: 1.25rem;
-  font-weight: 600;
 }
 
 .empty-state p {
-  font-size: 1rem;
-  line-height: 1.6;
-  max-width: 400px;
-  margin: 0 auto;
+  font-size: 0.9rem;
 }
 
 /* Content display */
 .content-display {
   flex: 1;
   overflow-y: auto;
-  display: flex;
-  flex-direction: column;
 }
 
 .page-navigation {
-  padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid #f0f0f0;
-  background: linear-gradient(135deg, #fafafa 0%, #ffffff 100%);
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #eee;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
 .nav-btn {
-  padding: 0.6rem 1.2rem;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  border: 1px solid #e0e0e0;
-  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #f8f9fa;
+  border: 1px solid #ddd;
+  border-radius: 0.25rem;
   cursor: pointer;
-  transition: all 0.3s ease;
-  font-weight: 500;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  transition: all 0.2s;
 }
 
 .nav-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  background: #e9ecef;
 }
 
 .nav-btn:disabled {
-  opacity: 0.4;
+  opacity: 0.5;
   cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
 }
 
 .page-counter {
@@ -1642,8 +1339,6 @@ html, body {
 
 .page-content {
   padding: 1.5rem;
-  flex: 1;
-  overflow-y: auto;
 }
 
 .page-title {
@@ -1663,14 +1358,6 @@ html, body {
 .content-text {
   line-height: 1.8;
   color: #444;
-  font-size: 0.95rem;
-  text-align: justify;
-  padding: 1rem;
-  background: #fafafa;
-  border-radius: 0.5rem;
-  border: 1px solid #f0f0f0;
-  max-height: 500px;
-  overflow-y: auto;
 }
 
 .ai-highlight {
@@ -1686,8 +1373,6 @@ html, body {
 .metadata-content {
   flex: 1;
   overflow-y: auto;
-  display: flex;
-  flex-direction: column;
 }
 
 .mode-indicator {
@@ -1713,109 +1398,39 @@ html, body {
   font-size: 1.2rem;
 }
 
-.threshold-info {
-  margin-left: auto;
-  font-size: 0.8rem;
-  opacity: 0.8;
-}
-
-/* Pre-curation info */
-.pre-curation-info {
-  padding: 1rem 1.5rem;
-  background: #fff3e0;
-  color: #f57c00;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  border-bottom: 1px solid #eee;
-  font-weight: 500;
-}
-
-.info-icon {
-  font-size: 1.2rem;
-}
-
-/* Field preview styles */
-.field-preview {
-  padding: 1.25rem;
-  background: linear-gradient(135deg, #f8f9fa 0%, #f0f0f0 100%);
-  border-radius: 0.75rem;
-  border: 2px dashed #d0d0d0;
-  transition: all 0.3s ease;
-}
-
-.field-preview:hover {
-  border-color: #b0b0b0;
-  background: linear-gradient(135deg, #f0f0f0 0%, #e8e8e8 100%);
-}
-
-.preview-info {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  color: #666;
-  font-style: italic;
-}
-
-.field-description {
-  text-transform: capitalize;
-}
-
-.options-count {
-  font-size: 0.8rem;
-  background: #e9ecef;
-  padding: 0.2rem 0.5rem;
-  border-radius: 0.25rem;
-}
-
-.preview-badge {
-  background: #fff3e0;
-  color: #f57c00;
-}
-
 /* Metadata fields */
 .metadata-fields {
-  flex: 1;
-  overflow-y: auto;
-  padding: 0.5rem;
+  padding: 1rem;
 }
 
 .metadata-field-card {
-  margin: 0.5rem;
-  padding: 1.25rem;
-  border: 1px solid #f0f0f0;
-  border-radius: 0.75rem;
-  transition: all 0.3s ease;
-  background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  margin-bottom: 1rem;
+  padding: 1.5rem;
+  border: 1px solid #eee;
+  border-radius: 0.5rem;
+  transition: all 0.2s;
 }
 
 .metadata-field-card:hover {
   border-color: #667eea;
-  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.15);
-  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
 }
 
 .metadata-field-card.has-ai-suggestion {
   border-left: 4px solid #2196f3;
-  background: linear-gradient(135deg, #f0f8ff 0%, #ffffff 100%);
 }
 
 .metadata-field-card.has-manual-value {
   border-left: 4px solid #9c27b0;
-  background: linear-gradient(135deg, #faf5ff 0%, #ffffff 100%);
 }
 
 .metadata-field-card.is-required {
-  border-top: 3px solid #f44336;
-  box-shadow: 0 2px 8px rgba(244, 67, 54, 0.1);
+  border-top: 2px solid #f44336;
 }
 
 .metadata-field-card.active-highlight {
   border-color: #8B5CF6;
-  background: linear-gradient(135deg, #f3f4f6 0%, #ffffff 100%);
-  box-shadow: 0 4px 20px rgba(139, 92, 246, 0.2);
-  transform: translateY(-2px);
+  background: #F3F4F6;
 }
 
 .field-header {
@@ -1836,54 +1451,39 @@ html, body {
   gap: 0.5rem;
 }
 
-.required-badge, .field-type-badge, .ai-badge, .confidence-badge, .preview-badge {
-  padding: 0.3rem 0.75rem;
-  border-radius: 1rem;
+.required-badge, .field-type-badge, .ai-badge, .confidence-badge {
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.25rem;
   font-size: 0.7rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  font-weight: 500;
 }
 
 .required-badge {
-  background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+  background: #ffebee;
   color: #c62828;
-  border: 1px solid #ffcdd2;
 }
 
 .field-type-badge {
-  background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+  background: #f3e5f5;
   color: #7b1fa2;
-  border: 1px solid #e1bee7;
 }
 
 .ai-badge {
-  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  background: #e3f2fd;
   color: #1976d2;
-  border: 1px solid #bbdefb;
 }
 
 .confidence-badge {
-  background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+  background: #e8f5e8;
   color: #2e7d32;
-  border: 1px solid #c8e6c9;
-}
-
-.preview-badge {
-  background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
-  color: #f57c00;
-  border: 1px solid #ffe0b2;
 }
 
 /* AI Suggestion Section */
 .ai-suggestion-section {
-  background: linear-gradient(135deg, #f0f8ff 0%, #f8f9ff 100%);
-  padding: 1.25rem;
-  border-radius: 0.75rem;
+  background: #f8f9ff;
+  padding: 1rem;
+  border-radius: 0.5rem;
   margin-bottom: 1rem;
-  border: 1px solid #e3f2fd;
-  box-shadow: 0 2px 8px rgba(33, 150, 243, 0.08);
 }
 
 .suggestion-value {
@@ -1915,48 +1515,40 @@ html, body {
 }
 
 .action-btn {
-  padding: 0.5rem 1rem;
+  padding: 0.4rem 0.8rem;
   border: none;
-  border-radius: 0.5rem;
+  border-radius: 0.25rem;
   font-size: 0.8rem;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  min-width: 80px;
+  transition: all 0.2s;
 }
 
 .accept-btn {
-  background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+  background: #4caf50;
   color: white;
 }
 
 .accept-btn:hover {
-  background: linear-gradient(135deg, #45a049 0%, #388e3c 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+  background: #45a049;
 }
 
 .reject-btn {
-  background: linear-gradient(135deg, #f44336 0%, #e53935 100%);
+  background: #f44336;
   color: white;
 }
 
 .reject-btn:hover {
-  background: linear-gradient(135deg, #e53935 0%, #d32f2f 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(244, 67, 54, 0.3);
+  background: #da190b;
 }
 
 .edit-btn {
-  background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+  background: #ff9800;
   color: white;
 }
 
 .edit-btn:hover {
-  background: linear-gradient(135deg, #f57c00 0%, #ef6c00 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
+  background: #f57c00;
 }
 
 .status-display {
@@ -1988,11 +1580,9 @@ html, body {
 
 /* Manual Entry Section */
 .manual-entry-section {
-  background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%);
-  padding: 1.25rem;
-  border-radius: 0.75rem;
-  border: 1px solid #f3e5f5;
-  box-shadow: 0 2px 8px rgba(156, 39, 176, 0.06);
+  background: #fafafa;
+  padding: 1rem;
+  border-radius: 0.5rem;
 }
 
 .field-input {
@@ -2009,19 +1599,16 @@ html, body {
 
 .form-select, .form-input, .form-textarea {
   width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #e0e0e0;
-  border-radius: 0.5rem;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 0.25rem;
   font-size: 0.9rem;
-  background: white;
-  transition: all 0.2s ease;
 }
 
 .form-select:focus, .form-input:focus, .form-textarea:focus {
   outline: none;
   border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-  background: #fafafa;
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
 }
 
 .form-textarea {
@@ -2035,37 +1622,32 @@ html, body {
 }
 
 .save-btn, .clear-btn {
-  padding: 0.6rem 1.2rem;
+  padding: 0.4rem 0.8rem;
   border: none;
-  border-radius: 0.5rem;
-  font-size: 0.85rem;
+  border-radius: 0.25rem;
+  font-size: 0.8rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: all 0.2s;
 }
 
 .save-btn {
-  background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+  background: #4caf50;
   color: white;
 }
 
 .save-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #45a049 0%, #388e3c 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+  background: #45a049;
 }
 
 .clear-btn {
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  background: #f8f9fa;
   color: #666;
-  border: 1px solid #e0e0e0;
+  border: 1px solid #ddd;
 }
 
 .clear-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  background: #e9ecef;
 }
 
 .save-btn:disabled, .clear-btn:disabled {
@@ -2075,47 +1657,38 @@ html, body {
 
 /* Bulk actions */
 .bulk-actions {
-  padding: 1.25rem 1.5rem;
-  border-top: 1px solid #f0f0f0;
-  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-  border-radius: 0 0 0.75rem 0.75rem;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #eee;
   display: flex;
   gap: 1rem;
-  justify-content: center;
 }
 
 .bulk-btn {
-  padding: 0.75rem 1.5rem;
+  padding: 0.6rem 1.2rem;
   border: none;
-  border-radius: 0.5rem;
+  border-radius: 0.25rem;
   font-size: 0.9rem;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  min-width: 160px;
+  transition: all 0.2s;
 }
 
 .accept-all-btn {
-  background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+  background: #4caf50;
   color: white;
 }
 
 .accept-all-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #45a049 0%, #388e3c 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(76, 175, 80, 0.3);
+  background: #45a049;
 }
 
 .reject-all-btn {
-  background: linear-gradient(135deg, #f44336 0%, #e53935 100%);
+  background: #f44336;
   color: white;
 }
 
 .reject-all-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #e53935 0%, #d32f2f 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(244, 67, 54, 0.3);
+  background: #da190b;
 }
 
 .bulk-btn:disabled {
@@ -2233,20 +1806,20 @@ html, body {
 }
 
 /* Responsive design */
-@media (max-width: 1200px) {
+@media (max-width: 1024px) {
   .main-content {
     grid-template-columns: 1fr;
     gap: 1rem;
-    padding: 1rem;
   }
   
-  .content-panel, .metadata-panel {
-    height: auto;
-    max-height: 60vh;
+  .control-row {
+    flex-direction: column;
+    align-items: stretch;
   }
   
-  .control-row { grid-template-columns: 1fr; gap: 1rem; }
-  .entity-group, .ai-group, .confidence-group, .action-group, .status-group { width: 100%; }
+  .status-group {
+    margin-left: 0;
+  }
 }
 
 @media (max-width: 768px) {
@@ -2255,8 +1828,7 @@ html, body {
   }
   
   .main-content {
-    padding: 0.75rem;
-    gap: 0.75rem;
+    padding: 1rem;
   }
   
   .entity-select {
@@ -2266,153 +1838,6 @@ html, body {
   
   .user-info {
     display: none;
-  }
-  
-  .panel-header {
-    padding: 1rem;
-  }
-  
-  .metadata-field-card {
-    padding: 1rem;
-    margin: 0.25rem;
-  }
-  
-  .bulk-actions {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-  
-  .bulk-btn {
-    min-width: auto;
-  }
-}
-
-@media (max-width: 480px) {
-  .app-header {
-    padding: 1rem;
-  }
-  
-  .header-container {
-    flex-direction: column;
-    gap: 1rem;
-    align-items: stretch;
-  }
-  
-  .control-panel {
-    padding: 0.75rem;
-  }
-  
-  .main-content {
-    padding: 0.5rem;
-  }
-}
-
-/* New Grid Column Styles - Override Everything */
-.control-col {
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 0.25rem !important;
-  height: 80px !important;
-  justify-content: center !important;
-}
-
-.col-entity { width: 520px !important; }
-.col-ai { width: 220px !important; }
-.col-confidence { width: 360px !important; }
-.col-action { width: 180px !important; }
-.col-status { min-width: auto !important; justify-self: end !important; }
-
-.ai-label {
-  display: flex !important;
-  align-items: center !important;
-  gap: 0.5rem !important;
-  font-size: 0.85rem !important;
-  cursor: pointer !important;
-}
-
-.ai-desc {
-  font-size: 0.75rem !important;
-  color: #666 !important;
-  font-style: italic !important;
-}
-
-.confidence-slider {
-  width: 100% !important;
-  height: 4px !important;
-  border-radius: 2px !important;
-  background: #e5e7eb !important;
-  outline: none !important;
-  -webkit-appearance: none !important;
-  margin: 0.25rem 0 !important;
-}
-
-.confidence-slider::-webkit-slider-thumb {
-  -webkit-appearance: none !important;
-  width: 16px !important;
-  height: 16px !important;
-  border-radius: 50% !important;
-  background: #667eea !important;
-  cursor: pointer !important;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
-}
-
-.confidence-slider::-webkit-slider-track {
-  height: 4px !important;
-  border-radius: 2px !important;
-  background: #e5e7eb !important;
-}
-
-.start-btn {
-  padding: 0.6rem 1rem !important;
-  border: none !important;
-  border-radius: 0.5rem !important;
-  font-size: 0.85rem !important;
-  font-weight: 600 !important;
-  cursor: pointer !important;
-  transition: all 0.2s !important;
-}
-
-.start-btn.ai-mode {
-  background: #667eea !important;
-  color: white !important;
-}
-
-.start-btn.manual-mode {
-  background: #9c27b0 !important;
-  color: white !important;
-}
-
-.start-placeholder {
-  font-size: 0.75rem !important;
-  color: #999 !important;
-  text-align: center !important;
-  font-style: italic !important;
-}
-
-.status-pill {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 0.4rem !important;
-  padding: 0.4rem 0.8rem !important;
-  border-radius: 0.8rem !important;
-  font-size: 0.75rem !important;
-  font-weight: 500 !important;
-  white-space: nowrap !important;
-  height: 2.2rem !important;
-  width: fit-content !important;
-  min-width: fit-content !important;
-  max-width: none !important;
-}
-
-@media (max-width: 1200px) {
-  .control-grid { 
-    grid-template-columns: 1fr !important; 
-    gap: 1rem !important; 
-    height: auto !important;
-  }
-  .col-entity, .col-ai, .col-confidence, .col-action, .col-status { 
-    width: 100% !important; 
-    height: auto !important;
   }
 }
 </style>

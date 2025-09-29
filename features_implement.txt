@@ -4,6 +4,7 @@ FEATURES I WANT TO IMPLEMENT:
 
 The html order kinda sucks, header footer title etc.
 I want to make sure that the data is sent from 1st ai agent to the 2nd. where to check?
+Backend should follow RESTful guidelines. No code leaks. No dead codes.
 
 
 GENERAL:
