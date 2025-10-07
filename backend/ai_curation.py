@@ -200,7 +200,7 @@ class AICurationService:
                     {"role": "user", "content": prompt},
                 ],
                 temperature=0.3,
-                max_tokens=min(self.max_tokens, 800),
+                max_tokens=min(self.max_tokens, 1200),
                 response_format={"type": "json_object"},
             )
 
@@ -212,7 +212,21 @@ class AICurationService:
             except json.JSONDecodeError as e:
                 logger.error(f"Agent B JSON parsing failed: {e}")
                 logger.error(f"Raw response: {ai_response}")
-                return []
+                
+                # Try to fix common JSON issues
+                try:
+                    # Remove trailing comma before closing bracket
+                    fixed_response = ai_response.rstrip().rstrip(',')
+                    if not fixed_response.endswith(']'):
+                        fixed_response += ']'
+                    if not fixed_response.endswith('}'):
+                        fixed_response += '}'
+                    
+                    parsed = json.loads(fixed_response)
+                    logger.info("Successfully fixed JSON parsing issue")
+                except json.JSONDecodeError as e2:
+                    logger.error(f"JSON fix attempt failed: {e2}")
+                    return []
                 
             items = parsed.get('confidences', [])
             # Normalize

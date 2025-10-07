@@ -44,25 +44,40 @@
     <!-- Control Panel - Fixed Layout -->
     <div class="control-panel">
       <div class="control-grid">
-        <!-- Column 1: Entity -->
-        <div class="control-col col-entity">
-          <label>Select Entity:</label>
+        <!-- Column 1: Source and Entity Selection (stacked) -->
+        <div class="control-col col-selection">
+          <label>Select Source/Catalog:</label>
+          <select 
+            v-model="selectedSourceId" 
+            @change="onSourceChange"
+            :disabled="isLoading"
+            class="source-select"
+          >
+            <option value="">Choose a catalog...</option>
+            <option 
+              v-for="source in sources" 
+              :key="source.id" 
+              :value="source.id"
+            >
+              {{ source.name }} ({{ source.editions_count }} entities)
+            </option>
+          </select>
+          
+          <label style="margin-top: 10px;">Select Entity:</label>
           <select 
             v-model="selectedEntityId" 
             @change="onEntityChange"
-            :disabled="isLoading"
+            :disabled="isLoading || !selectedSourceId"
             class="entity-select"
           >
-            <option value="">Choose an entity...</option>
-            <optgroup v-for="source in sources" :key="source.id" :label="source.name">
-              <option 
-                v-for="edition in source.editions" 
-                :key="edition.id" 
-                :value="edition.id"
-              >
-                {{ edition.entity_name }}
-              </option>
-            </optgroup>
+            <option value="">{{ selectedSourceId ? 'Choose an entity...' : 'Select source first' }}</option>
+            <option 
+              v-for="edition in filteredEditions" 
+              :key="edition.id" 
+              :value="edition.id"
+            >
+              {{ edition.entity_name || edition.source_internal_id || `Entity ${edition.id}` }}
+            </option>
           </select>
         </div>
         
@@ -463,6 +478,7 @@ export default {
       // Core data
       sources: [],
       properties: [],
+      selectedSourceId: null,
       selectedEntityId: null,
       selectedEntity: null,
       selectedSource: null,
@@ -498,6 +514,15 @@ export default {
   },
   
   computed: {
+    // Filtered editions based on selected source
+    filteredEditions() {
+      if (!this.selectedSourceId) {
+        return []
+      }
+      const source = this.sources.find(s => s.id === this.selectedSourceId)
+      return source ? source.editions : []
+    },
+    
     currentPage() {
       return this.scrapedContent.pages[this.currentPageIndex] || null
     },
@@ -505,7 +530,7 @@ export default {
     metadataFields() {
       if (!this.properties.length) return []
       
-      return this.properties.map(property => {
+      const fields = this.properties.map(property => {
         // Find AI suggestion for this property
         const aiSuggestion = this.aiSuggestions.find(s => s.property_id === property.id)
         
@@ -532,6 +557,24 @@ export default {
           needsManualEntry,
           isInteractive: this.curationStarted
         }
+      })
+      
+      // Sort fields: AI suggestions first, then manual fields, then empty fields
+      return fields.sort((a, b) => {
+        // AI suggestions first (highest priority)
+        if (a.showAISuggestion && !b.showAISuggestion) return -1
+        if (!a.showAISuggestion && b.showAISuggestion) return 1
+        
+        // Manual values second
+        if (a.manualValue && !b.manualValue) return -1
+        if (!a.manualValue && b.manualValue) return 1
+        
+        // Required fields before optional
+        if (a.is_required && !b.is_required) return -1
+        if (!a.is_required && b.is_required) return 1
+        
+        // Finally, sort by property ID for consistency
+            return a.id - b.id
       })
     },
     
@@ -643,6 +686,20 @@ export default {
       } catch (error) {
         console.error('Failed to fetch initial data:', error)
       }
+    },
+    
+    // Handle source selection change
+    onSourceChange() {
+      // Reset entity selection when source changes
+      this.selectedEntityId = null
+      this.selectedEntity = null
+      this.resetState()
+      
+      // Update selected source
+      const source = this.sources.find(s => s.id === this.selectedSourceId)
+      this.selectedSource = source || null
+      
+      console.log(`Source changed to: ${source ? source.name : 'None'}`)
     },
     
     async onEntityChange() {
@@ -1202,7 +1259,8 @@ html, body {
 /* Control Panel - Rock Solid Layout */
 .control-panel {
   background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-  padding: 1rem 2rem;
+  padding: 1.5rem 2rem;
+  min-height: 120px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.08);
   border-bottom: 1px solid #f0f0f0;
   flex-shrink: 0;
@@ -1210,12 +1268,12 @@ html, body {
 
 .control-grid {
   display: grid;
-  grid-template-columns: 520px 220px 360px 180px auto; /* status column auto-sizes */
+  grid-template-columns: 520px 220px 360px 180px auto; /* selection, ai, confidence, action, status */
   gap: 1.5rem;
   align-items: center;
   max-width: 1600px;
   margin: 0 auto;
-  height: 80px; /* Fixed height prevents any vertical movement */
+  min-height: 100px; /* Taller for better visual balance */
 }
 
 /* Fixed column widths */
@@ -2311,11 +2369,13 @@ html, body {
 .control-col {
   display: flex !important;
   flex-direction: column !important;
-  gap: 0.25rem !important;
-  height: 80px !important;
+  gap: 0.5rem !important;
+  min-height: 90px !important;
   justify-content: center !important;
+  padding: 0.5rem 0 !important;
 }
 
+.col-selection { width: 520px !important; }
 .col-entity { width: 520px !important; }
 .col-ai { width: 220px !important; }
 .col-confidence { width: 360px !important; }

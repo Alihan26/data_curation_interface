@@ -31,7 +31,7 @@ cp env_template.txt .env
 python app.py
 ```
 
-The backend will start on **http://localhost:8000**
+The backend will start on **http://localhost:8001**
 
 ### Frontend Setup
 ```bash
@@ -49,14 +49,14 @@ The frontend will start on **http://localhost:4000**
 
 ### First Run
 1. Open your browser and navigate to **http://localhost:4000**
-2. Ensure the backend is running on port 8000
+2. Ensure the backend is running on port 8001
 3. Check "🤖 Use AI Suggestions" if you want AI-powered metadata suggestions
 4. Start curating metadata!
 
 ## 🏗️ Architecture
 
 ### Backend (Flask)
-- **Port**: 8000
+- **Port**: 8001
 - **Framework**: Flask with RESTful API
 - **Features**:
   - In-memory data store (demo purposes)
@@ -159,8 +159,8 @@ cd backend && python -m py_compile app.py
 cd frontend && npm run build
 
 # API testing
-curl http://localhost:8000/api/health
-curl http://localhost:8000/api/sources
+curl http://localhost:8001/api/health
+curl http://localhost:8001/api/sources
 ```
 
 ### Project Structure
@@ -260,7 +260,7 @@ This project is part of a Bachelor's thesis on Human-AI Metadata Curation.
 ### Common Issues
 
 **Backend won't start:**
-- Check if port 8000 is available
+- Check if port 8001 is available
 - Verify Python dependencies are installed
 - Check `.env` file configuration
 

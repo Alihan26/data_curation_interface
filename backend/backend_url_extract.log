@@ -1,0 +1,162 @@
+INFO:app:Metadata Curation API Client initialized with base URL: http://localhost:8000
+INFO:ai_curation:AI Curation Service initialized with model: gpt-4o-mini
+INFO:httpx:HTTP Request: GET https://api.openai.com/v1/models "HTTP/1.1 200 OK"
+INFO:app:AI Curation Service initialized successfully
+INFO:app:Fetching data from Metadata Curation API...
+INFO:app:API data loaded - Sources: 3, Properties: 48, Editions: 355
+INFO:app:DEBUG: Data initialized - Sources: 3, Properties: 48, Editions: 355
+🚀 Starting Curation Preview API & Metadata-Curation mock…
+ * Serving Flask app 'app'
+ * Debug mode: off
+INFO:werkzeug:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8001
+ * Running on http://192.168.1.239:8001
+INFO:werkzeug:[33mPress CTRL+C to quit[0m
+INFO:app:Listing all sources
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 12:49:01] "GET /api/sources HTTP/1.1" 200 -
+INFO:app:Listing all properties
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 12:49:01] "GET /api/properties HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 343
+INFO:app:Processing entity 'Martin Volk' with AI=disabled
+INFO:app:Fetching existing suggestions for entity Martin Volk from external API
+INFO:app:Found 5 suggestions for entity Martin Volk
+WARNING:app:No URL found in suggestions for entity Martin Volk
+INFO:app:Found 2 contexts for entity Martin Volk
+INFO:app:Extracted URL from context for entity Martin Volk: https://www.cl.uzh.ch/de/about-us/people/team/compling/volk.html
+INFO:app:Fetching HTML from: https://www.cl.uzh.ch/de/about-us/people/team/compling/volk.html
+INFO:app:Successfully processed page: Prof. Dr. Martin Volk | Institut für Computerlingu...
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 12:49:05] "POST /api/entities/343/scrape HTTP/1.1" 200 -
+INFO:app:Listing all sources
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 12:52:26] "GET /api/sources HTTP/1.1" 200 -
+INFO:app:Listing all properties
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 12:52:26] "GET /api/properties HTTP/1.1" 200 -
+INFO:app:Listing all sources
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 12:52:41] "GET /api/sources HTTP/1.1" 200 -
+INFO:app:Listing all properties
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 12:52:41] "GET /api/properties HTTP/1.1" 200 -
+INFO:app:Listing all sources
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 12:53:03] "GET /api/sources HTTP/1.1" 200 -
+INFO:app:Listing all properties
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 12:53:03] "GET /api/properties HTTP/1.1" 200 -
+INFO:app:Listing all sources
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 13:19:14] "GET /api/sources HTTP/1.1" 200 -
+INFO:app:Listing all sources
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 13:19:14] "GET /api/sources HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 340
+INFO:app:Processing entity 'Moritz Mähr' with AI=disabled
+INFO:app:Fetching existing suggestions for entity Moritz Mähr from external API
+INFO:app:Found 5 suggestions for entity Moritz Mähr
+WARNING:app:No URL found in suggestions for entity Moritz Mähr
+INFO:app:Found 2 contexts for entity Moritz Mähr
+INFO:app:Extracted URL from context for entity Moritz Mähr: https://www.dh.unibe.ch/ueber_uns/personen/dr_sc_maehr_moritz/index_ger.html
+INFO:app:Fetching HTML from: https://www.dh.unibe.ch/ueber_uns/personen/dr_sc_maehr_moritz/index_ger.html
+INFO:app:Successfully processed page: Über uns: Dr. sc. Moritz Mähr - Digital Humanities...
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 13:19:34] "POST /api/entities/340/scrape HTTP/1.1" 200 -
+INFO:app:Listing all sources
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 13:21:04] "GET /api/sources HTTP/1.1" 200 -
+INFO:app:Listing all properties
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 13:21:04] "GET /api/properties HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 340
+INFO:app:Processing entity 'Moritz Mähr' with AI=disabled
+INFO:app:Fetching existing suggestions for entity Moritz Mähr from external API
+INFO:app:Found 5 suggestions for entity Moritz Mähr
+WARNING:app:No URL found in suggestions for entity Moritz Mähr
+INFO:app:Found 2 contexts for entity Moritz Mähr
+INFO:app:Extracted URL from context for entity Moritz Mähr: https://www.dh.unibe.ch/ueber_uns/personen/dr_sc_maehr_moritz/index_ger.html
+INFO:app:Fetching HTML from: https://www.dh.unibe.ch/ueber_uns/personen/dr_sc_maehr_moritz/index_ger.html
+INFO:app:Successfully processed page: Über uns: Dr. sc. Moritz Mähr - Digital Humanities...
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 13:21:10] "POST /api/entities/340/scrape HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 5
+INFO:app:Processing entity 'None' with AI=disabled
+INFO:app:Fetching existing suggestions for entity None from external API
+INFO:app:Found 41 suggestions for entity None
+INFO:app:Found real URL for entity None: http://www.confessio.ie/#
+INFO:app:Fetching HTML from: http://www.confessio.ie/#
+INFO:app:Successfully processed page: 'My name is Patrick... | St. Patrick’s Confessio...
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 13:21:22] "POST /api/entities/5/scrape HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 5
+INFO:app:Processing entity 'None' with AI=disabled
+INFO:app:Fetching existing suggestions for entity None from external API
+INFO:app:Found 41 suggestions for entity None
+INFO:app:Found real URL for entity None: http://www.confessio.ie/#
+INFO:app:Fetching HTML from: http://www.confessio.ie/#
+INFO:app:Successfully processed page: 'My name is Patrick... | St. Patrick’s Confessio...
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 13:21:28] "POST /api/entities/5/scrape HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 341
+INFO:app:Processing entity 'Jürgen Bernard' with AI=disabled
+INFO:app:Fetching existing suggestions for entity Jürgen Bernard from external API
+INFO:app:Found 5 suggestions for entity Jürgen Bernard
+WARNING:app:No URL found in suggestions for entity Jürgen Bernard
+INFO:app:Found 2 contexts for entity Jürgen Bernard
+INFO:app:Extracted URL from context for entity Jürgen Bernard: https://www.ifi.uzh.ch/en/ivda/team/bernard.html
+INFO:app:Fetching HTML from: https://www.ifi.uzh.ch/en/ivda/team/bernard.html
+INFO:app:Successfully processed page: Jürgen Bernard, Prof. Dr. | Department of Informat...
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 13:21:36] "POST /api/entities/341/scrape HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 339
+INFO:app:Processing entity 'Michael Blum' with AI=disabled
+INFO:app:Fetching existing suggestions for entity Michael Blum from external API
+INFO:app:Found 5 suggestions for entity Michael Blum
+WARNING:app:No URL found in suggestions for entity Michael Blum
+INFO:app:Found 2 contexts for entity Michael Blum
+INFO:app:Extracted URL from context for entity Michael Blum: https://www.ifi.uzh.ch/en/ivda/team/michael_blum.html
+INFO:app:Fetching HTML from: https://www.ifi.uzh.ch/en/ivda/team/michael_blum.html
+INFO:app:Successfully processed page: Michael Blum | Department of Informatics  | UZH...
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 13:32:12] "POST /api/entities/339/scrape HTTP/1.1" 200 -
+INFO:app:Listing all sources
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 13:56:57] "GET /api/sources HTTP/1.1" 200 -
+INFO:app:Listing all properties
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 13:56:57] "GET /api/properties HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 341
+INFO:app:Processing entity 'Jürgen Bernard' with AI=disabled
+INFO:app:Fetching existing suggestions for entity Jürgen Bernard from external API
+WARNING:app:No existing suggestions found for entity Jürgen Bernard
+INFO:app:Generated placeholder content for real entity (no URL/context found): Jürgen Bernard
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 13:57:04] "POST /api/entities/341/scrape HTTP/1.1" 200 -
+INFO:app:Listing all sources
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 13:57:46] "GET /api/sources HTTP/1.1" 200 -
+INFO:app:Listing all properties
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 13:57:46] "GET /api/properties HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 349
+INFO:app:Processing entity 'Maria-Teresa De Rosa Palmini' with AI=disabled
+INFO:app:Fetching existing suggestions for entity Maria-Teresa De Rosa Palmini from external API
+WARNING:app:No existing suggestions found for entity Maria-Teresa De Rosa Palmini
+INFO:app:Generated placeholder content for real entity (no URL/context found): Maria-Teresa De Rosa Palmini
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 13:57:50] "POST /api/entities/349/scrape HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 349
+INFO:app:Processing entity 'Maria-Teresa De Rosa Palmini' with AI=disabled
+INFO:app:Fetching existing suggestions for entity Maria-Teresa De Rosa Palmini from external API
+WARNING:app:No existing suggestions found for entity Maria-Teresa De Rosa Palmini
+INFO:app:Generated placeholder content for real entity (no URL/context found): Maria-Teresa De Rosa Palmini
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 13:57:53] "POST /api/entities/349/scrape HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 349
+INFO:app:Processing entity 'Maria-Teresa De Rosa Palmini' with AI=disabled
+INFO:app:Fetching existing suggestions for entity Maria-Teresa De Rosa Palmini from external API
+WARNING:app:No existing suggestions found for entity Maria-Teresa De Rosa Palmini
+INFO:app:Generated placeholder content for real entity (no URL/context found): Maria-Teresa De Rosa Palmini
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 13:57:54] "POST /api/entities/349/scrape HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 349
+INFO:app:Processing entity 'Maria-Teresa De Rosa Palmini' with AI=disabled
+INFO:app:Fetching existing suggestions for entity Maria-Teresa De Rosa Palmini from external API
+WARNING:app:No existing suggestions found for entity Maria-Teresa De Rosa Palmini
+INFO:app:Generated placeholder content for real entity (no URL/context found): Maria-Teresa De Rosa Palmini
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 13:57:55] "POST /api/entities/349/scrape HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 349
+INFO:app:Processing entity 'Maria-Teresa De Rosa Palmini' with AI=disabled
+INFO:app:Fetching existing suggestions for entity Maria-Teresa De Rosa Palmini from external API
+WARNING:app:No existing suggestions found for entity Maria-Teresa De Rosa Palmini
+INFO:app:Generated placeholder content for real entity (no URL/context found): Maria-Teresa De Rosa Palmini
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 13:57:58] "POST /api/entities/349/scrape HTTP/1.1" 200 -

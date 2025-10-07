@@ -1,0 +1,115 @@
+INFO:app:Metadata Curation API Client initialized with base URL: http://localhost:8000
+INFO:ai_curation:AI Curation Service initialized with model: gpt-4o-mini
+INFO:httpx:HTTP Request: GET https://api.openai.com/v1/models "HTTP/1.1 200 OK"
+INFO:app:AI Curation Service initialized successfully
+INFO:app:Fetching data from Metadata Curation API...
+INFO:app:API data loaded - Sources: 3, Properties: 48, Editions: 1065
+INFO:app:DEBUG: Data initialized - Sources: 3, Properties: 48, Editions: 1065
+🚀 Starting Curation Preview API & Metadata-Curation mock…
+ * Serving Flask app 'app'
+ * Debug mode: off
+INFO:werkzeug:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8001
+ * Running on http://192.168.1.239:8001
+INFO:werkzeug:[33mPress CTRL+C to quit[0m
+INFO:app:Scraping content for entity 3
+INFO:app:Processing entity 'None' with AI=disabled
+INFO:app:Fetching existing suggestions for entity None from external API
+INFO:app:Found 41 suggestions for entity None
+INFO:app:Found real URL for entity None: http://www.thomasgray.org/
+INFO:app:Fetching HTML from: http://www.thomasgray.org/
+INFO:app:Successfully processed page: Thomas Gray Archive : Home...
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 11:54:52] "POST /api/entities/3/scrape HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 1
+INFO:app:Processing entity 'This got changed oh noo' with AI=disabled
+INFO:app:Fetching existing suggestions for entity This got changed oh noo from external API
+WARNING:app:No existing suggestions found for entity This got changed oh noo
+INFO:app:Generated placeholder content for real entity (no URL found): This got changed oh noo
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 11:54:57] "POST /api/entities/1/scrape HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 9
+INFO:app:Processing entity 'None' with AI=disabled
+INFO:app:Fetching existing suggestions for entity None from external API
+INFO:app:Found 40 suggestions for entity None
+INFO:app:Found real URL for entity None: http://vto2.classics.ox.ac.uk/
+INFO:app:Fetching HTML from: http://vto2.classics.ox.ac.uk/
+ERROR:app:Error processing URL http://vto2.classics.ox.ac.uk/: HTTPConnectionPool(host='vto2.classics.ox.ac.uk', port=80): Max retries exceeded with url: / (Caused by NameResolutionError("<urllib3.connection.HTTPConnection object at 0x117691090>: Failed to resolve 'vto2.classics.ox.ac.uk' ([Errno 8] nodename nor servname provided, or not known)"))
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 11:55:07] "POST /api/entities/9/scrape HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 8
+INFO:app:Processing entity 'None' with AI=disabled
+INFO:app:Fetching existing suggestions for entity None from external API
+INFO:app:Found 41 suggestions for entity None
+INFO:app:Found real URL for entity None: http://vindolanda.csad.ox.ac.uk/index.shtml
+INFO:app:Fetching HTML from: http://vindolanda.csad.ox.ac.uk/index.shtml
+INFO:app:Successfully processed page: Vindolanda Tablets Online  |  Welcome...
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 11:55:10] "POST /api/entities/8/scrape HTTP/1.1" 200 -
+INFO:app:Listing all sources
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 12:35:25] "GET /api/sources HTTP/1.1" 200 -
+INFO:app:Listing all properties
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 12:35:25] "GET /api/properties HTTP/1.1" 200 -
+INFO:app:Listing all sources
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 12:35:39] "GET /api/sources HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 339
+INFO:app:Processing entity 'Michael Blum' with AI=disabled
+INFO:app:Fetching existing suggestions for entity Michael Blum from external API
+INFO:app:Found 5 suggestions for entity Michael Blum
+WARNING:app:No URL found in suggestions for entity Michael Blum
+INFO:app:Generated placeholder content for real entity (no URL found): Michael Blum
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 12:35:58] "POST /api/entities/339/scrape HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 340
+INFO:app:Processing entity 'Moritz Mähr' with AI=disabled
+INFO:app:Fetching existing suggestions for entity Moritz Mähr from external API
+INFO:app:Found 5 suggestions for entity Moritz Mähr
+WARNING:app:No URL found in suggestions for entity Moritz Mähr
+INFO:app:Generated placeholder content for real entity (no URL found): Moritz Mähr
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 12:36:04] "POST /api/entities/340/scrape HTTP/1.1" 200 -
+INFO:app:Listing all sources
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 12:36:42] "GET /api/sources HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 343
+INFO:app:Processing entity 'Martin Volk' with AI=disabled
+INFO:app:Fetching existing suggestions for entity Martin Volk from external API
+INFO:app:Found 5 suggestions for entity Martin Volk
+WARNING:app:No URL found in suggestions for entity Martin Volk
+INFO:app:Generated placeholder content for real entity (no URL found): Martin Volk
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 12:37:21] "POST /api/entities/343/scrape HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 354
+INFO:app:Processing entity 'Stefan Wiederkehr' with AI=disabled
+INFO:app:Fetching existing suggestions for entity Stefan Wiederkehr from external API
+INFO:app:Found 3 suggestions for entity Stefan Wiederkehr
+WARNING:app:No URL found in suggestions for entity Stefan Wiederkehr
+INFO:app:Generated placeholder content for real entity (no URL found): Stefan Wiederkehr
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 12:37:26] "POST /api/entities/354/scrape HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 326
+INFO:app:Processing entity 'None' with AI=disabled
+INFO:app:Fetching existing suggestions for entity None from external API
+INFO:app:Found 41 suggestions for entity None
+INFO:app:Found real URL for entity None: https://schnitzler-chronik.acdh.oeaw.ac.at/
+INFO:app:Fetching HTML from: https://schnitzler-chronik.acdh.oeaw.ac.at/
+ERROR:app:Error processing URL https://schnitzler-chronik.acdh.oeaw.ac.at/: 'NoneType' object is not subscriptable
+INFO:app:Manual Processing: 2 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 12:37:29] "POST /api/entities/326/scrape HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 4
+INFO:app:Processing entity 'None' with AI=disabled
+INFO:app:Fetching existing suggestions for entity None from external API
+INFO:app:Found 41 suggestions for entity None
+INFO:app:Found real URL for entity None: http://www.dafyddapgwilym.net/
+INFO:app:Fetching HTML from: http://www.dafyddapgwilym.net/
+INFO:app:Successfully processed page: Dafydd Ap Gwilym.net...
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 12:37:33] "POST /api/entities/4/scrape HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 350
+INFO:app:Processing entity 'Eva Cetinić' with AI=disabled
+INFO:app:Fetching existing suggestions for entity Eva Cetinić from external API
+INFO:app:Found 5 suggestions for entity Eva Cetinić
+WARNING:app:No URL found in suggestions for entity Eva Cetinić
+INFO:app:Generated placeholder content for real entity (no URL found): Eva Cetinić
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 12:37:40] "POST /api/entities/350/scrape HTTP/1.1" 200 -

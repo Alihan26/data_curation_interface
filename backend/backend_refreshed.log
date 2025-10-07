@@ -1,0 +1,149 @@
+INFO:app:Metadata Curation API Client initialized with base URL: http://localhost:8000
+INFO:ai_curation:AI Curation Service initialized with model: gpt-4o-mini
+INFO:httpx:HTTP Request: GET https://api.openai.com/v1/models "HTTP/1.1 200 OK"
+INFO:app:AI Curation Service initialized successfully
+INFO:app:Fetching data from Metadata Curation API...
+INFO:app:API data loaded - Sources: 1, Properties: 5, Editions: 17
+INFO:app:DEBUG: Data initialized - Sources: 1, Properties: 5, Editions: 17
+🚀 Starting Curation Preview API & Metadata-Curation mock…
+ * Serving Flask app 'app'
+ * Debug mode: off
+INFO:werkzeug:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8001
+ * Running on http://192.168.1.239:8001
+INFO:werkzeug:[33mPress CTRL+C to quit[0m
+INFO:app:Listing all sources
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 14:40:25] "GET /api/sources HTTP/1.1" 200 -
+INFO:app:Listing all properties
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 14:40:25] "GET /api/properties HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 2
+INFO:app:Processing entity 'Moritz Mähr' with AI=disabled
+INFO:app:Fetching existing suggestions for entity Moritz Mähr from external API
+INFO:app:Found 5 suggestions for entity Moritz Mähr
+WARNING:app:No URL found in suggestions for entity Moritz Mähr
+INFO:app:Found 2 contexts for entity Moritz Mähr
+INFO:app:Extracted URL from context for entity Moritz Mähr: https://www.dh.unibe.ch/ueber_uns/personen/dr_sc_maehr_moritz/index_ger.html
+INFO:app:Fetching HTML from: https://www.dh.unibe.ch/ueber_uns/personen/dr_sc_maehr_moritz/index_ger.html
+INFO:app:Successfully processed page: Über uns: Dr. sc. Moritz Mähr - Digital Humanities...
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 14:40:29] "POST /api/entities/2/scrape HTTP/1.1" 200 -
+INFO:app:Listing all sources
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 14:40:44] "GET /api/sources HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 6
+INFO:app:Processing entity 'Tristan Weddigen' with AI=disabled
+INFO:app:Fetching existing suggestions for entity Tristan Weddigen from external API
+INFO:app:Found 5 suggestions for entity Tristan Weddigen
+WARNING:app:No URL found in suggestions for entity Tristan Weddigen
+INFO:app:Found 2 contexts for entity Tristan Weddigen
+INFO:app:Extracted URL from context for entity Tristan Weddigen: https://www.khist.uzh.ch/de/chairs/neuzeit/prof.html
+INFO:app:Fetching HTML from: https://www.khist.uzh.ch/de/chairs/neuzeit/prof.html
+INFO:app:Successfully processed page: Prof. Dr. Tristan Weddigen - <br/>Ordentlicher Pro...
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 14:43:16] "POST /api/entities/6/scrape HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 11
+INFO:app:Processing entity 'Maria-Teresa De Rosa Palmini' with AI=disabled
+INFO:app:Fetching existing suggestions for entity Maria-Teresa De Rosa Palmini from external API
+INFO:app:Found 5 suggestions for entity Maria-Teresa De Rosa Palmini
+WARNING:app:No URL found in suggestions for entity Maria-Teresa De Rosa Palmini
+INFO:app:Found 2 contexts for entity Maria-Teresa De Rosa Palmini
+INFO:app:Extracted URL from context for entity Maria-Teresa De Rosa Palmini: https://www.khist.uzh.ch/de/chairs/neuzeit/assist/derosapalmini.html
+INFO:app:Fetching HTML from: https://www.khist.uzh.ch/de/chairs/neuzeit/assist/derosapalmini.html
+INFO:app:Successfully processed page: Maria-Teresa De Rosa-Palmini | Kunsthistorisches I...
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 14:45:09] "POST /api/entities/11/scrape HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 11
+INFO:app:Processing entity 'Maria-Teresa De Rosa Palmini' with AI=disabled
+INFO:app:Fetching existing suggestions for entity Maria-Teresa De Rosa Palmini from external API
+INFO:app:Found 5 suggestions for entity Maria-Teresa De Rosa Palmini
+WARNING:app:No URL found in suggestions for entity Maria-Teresa De Rosa Palmini
+INFO:app:Found 2 contexts for entity Maria-Teresa De Rosa Palmini
+INFO:app:Extracted URL from context for entity Maria-Teresa De Rosa Palmini: https://www.khist.uzh.ch/de/chairs/neuzeit/assist/derosapalmini.html
+INFO:app:Fetching HTML from: https://www.khist.uzh.ch/de/chairs/neuzeit/assist/derosapalmini.html
+INFO:app:Successfully processed page: Maria-Teresa De Rosa-Palmini | Kunsthistorisches I...
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 14:45:17] "POST /api/entities/11/scrape HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 11
+INFO:app:Processing entity 'Maria-Teresa De Rosa Palmini' with AI=disabled
+INFO:app:Fetching existing suggestions for entity Maria-Teresa De Rosa Palmini from external API
+INFO:app:Found 5 suggestions for entity Maria-Teresa De Rosa Palmini
+WARNING:app:No URL found in suggestions for entity Maria-Teresa De Rosa Palmini
+INFO:app:Found 2 contexts for entity Maria-Teresa De Rosa Palmini
+INFO:app:Extracted URL from context for entity Maria-Teresa De Rosa Palmini: https://www.khist.uzh.ch/de/chairs/neuzeit/assist/derosapalmini.html
+INFO:app:Fetching HTML from: https://www.khist.uzh.ch/de/chairs/neuzeit/assist/derosapalmini.html
+INFO:app:Successfully processed page: Maria-Teresa De Rosa-Palmini | Kunsthistorisches I...
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 14:45:18] "POST /api/entities/11/scrape HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 11
+INFO:app:Processing entity 'Maria-Teresa De Rosa Palmini' with AI=disabled
+INFO:app:Fetching existing suggestions for entity Maria-Teresa De Rosa Palmini from external API
+INFO:app:Found 5 suggestions for entity Maria-Teresa De Rosa Palmini
+WARNING:app:No URL found in suggestions for entity Maria-Teresa De Rosa Palmini
+INFO:app:Found 2 contexts for entity Maria-Teresa De Rosa Palmini
+INFO:app:Extracted URL from context for entity Maria-Teresa De Rosa Palmini: https://www.khist.uzh.ch/de/chairs/neuzeit/assist/derosapalmini.html
+INFO:app:Fetching HTML from: https://www.khist.uzh.ch/de/chairs/neuzeit/assist/derosapalmini.html
+INFO:app:Successfully processed page: Maria-Teresa De Rosa-Palmini | Kunsthistorisches I...
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 14:45:19] "POST /api/entities/11/scrape HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 11
+INFO:app:Processing entity 'Maria-Teresa De Rosa Palmini' with AI=disabled
+INFO:app:Fetching existing suggestions for entity Maria-Teresa De Rosa Palmini from external API
+INFO:app:Found 5 suggestions for entity Maria-Teresa De Rosa Palmini
+WARNING:app:No URL found in suggestions for entity Maria-Teresa De Rosa Palmini
+INFO:app:Found 2 contexts for entity Maria-Teresa De Rosa Palmini
+INFO:app:Extracted URL from context for entity Maria-Teresa De Rosa Palmini: https://www.khist.uzh.ch/de/chairs/neuzeit/assist/derosapalmini.html
+INFO:app:Fetching HTML from: https://www.khist.uzh.ch/de/chairs/neuzeit/assist/derosapalmini.html
+INFO:app:Successfully processed page: Maria-Teresa De Rosa-Palmini | Kunsthistorisches I...
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 14:45:20] "POST /api/entities/11/scrape HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 11
+INFO:app:Processing entity 'Maria-Teresa De Rosa Palmini' with AI=disabled
+INFO:app:Fetching existing suggestions for entity Maria-Teresa De Rosa Palmini from external API
+INFO:app:Found 5 suggestions for entity Maria-Teresa De Rosa Palmini
+WARNING:app:No URL found in suggestions for entity Maria-Teresa De Rosa Palmini
+INFO:app:Found 2 contexts for entity Maria-Teresa De Rosa Palmini
+INFO:app:Extracted URL from context for entity Maria-Teresa De Rosa Palmini: https://www.khist.uzh.ch/de/chairs/neuzeit/assist/derosapalmini.html
+INFO:app:Fetching HTML from: https://www.khist.uzh.ch/de/chairs/neuzeit/assist/derosapalmini.html
+INFO:app:Successfully processed page: Maria-Teresa De Rosa-Palmini | Kunsthistorisches I...
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 14:45:21] "POST /api/entities/11/scrape HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 11
+INFO:app:Processing entity 'Maria-Teresa De Rosa Palmini' with AI=enabled
+INFO:app:Fetching existing suggestions for entity Maria-Teresa De Rosa Palmini from external API
+INFO:app:Found 5 suggestions for entity Maria-Teresa De Rosa Palmini
+WARNING:app:No URL found in suggestions for entity Maria-Teresa De Rosa Palmini
+INFO:app:Found 2 contexts for entity Maria-Teresa De Rosa Palmini
+INFO:app:Extracted URL from context for entity Maria-Teresa De Rosa Palmini: https://www.khist.uzh.ch/de/chairs/neuzeit/assist/derosapalmini.html
+INFO:app:Fetching HTML from: https://www.khist.uzh.ch/de/chairs/neuzeit/assist/derosapalmini.html
+INFO:app:Successfully processed page: Maria-Teresa De Rosa-Palmini | Kunsthistorisches I...
+INFO:app:AI suggestions requested, generating for each page
+INFO:app:DEBUG: Properties count: 5
+INFO:app:DEBUG: First property: {'id': 1, 'technical_name': 'department', 'name': 'Department', 'type': 'MULTIPLE_CHOICE', 'is_required': False, 'property_options': [{'name': 'Department of Informatics', 'created_at': '2025-10-07T13:56:06.616610', 'id': 1, 'property_id': 1}, {'name': 'Department of Digital Humanities', 'created_at': '2025-10-07T13:56:06.616766', 'id': 2, 'property_id': 1}, {'name': 'Department of Theology', 'created_at': '2025-10-07T13:56:06.616877', 'id': 3, 'property_id': 1}, {'name': 'Department of Computational Linguistics', 'created_at': '2025-10-07T13:56:06.616982', 'id': 4, 'property_id': 1}, {'name': 'Department of Art History', 'created_at': '2025-10-07T13:56:06.617111', 'id': 5, 'property_id': 1}, {'name': 'Department of Greek and Latin Philology', 'created_at': '2025-10-07T13:56:06.617235', 'id': 6, 'property_id': 1}, {'name': 'Department of History', 'created_at': '2025-10-07T13:56:06.617351', 'id': 7, 'property_id': 1}, {'name': 'Department of Computational Linguistics; Linguistic Research Infrastructuree (LiRI)', 'created_at': '2025-10-07T13:56:06.617455', 'id': 8, 'property_id': 1}, {'name': 'Department of Film Studies', 'created_at': '2025-10-07T13:56:06.617560', 'id': 9, 'property_id': 1}]}
+INFO:app:DEBUG: Pages data count: 1
+INFO:app:DEBUG: First page text length: 3290
+INFO:app:Using source_id: 1, edition_id: 11
+INFO:app:DEBUG: Processing page: https://www.khist.uzh.ch/de/chairs/neuzeit/assist/derosapalmini.html
+INFO:app:DEBUG: Page text content length: 3290
+INFO:app:🤖 Starting two-pass AI confidence system
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:ai_curation:Reasoner produced 5 suggestions (no confidence)
+INFO:app:🧠 Agent A (Reasoner) generated 5 reasoned suggestions
+INFO:app:DEBUG: Reasoner suggestions: 5
+INFO:ai_curation:Validated 5 suggestions from AI
+INFO:app:DEBUG: Validated (two-pass) suggestions: 5
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:ai_curation:Interpreter produced confidences for 5 properties
+INFO:app:🎯 Agent B (Interpreter) processed 5 confidence interpretations
+INFO:app:📊 Two-pass confidence distribution:
+INFO:app:   • Average: 0.98
+INFO:app:   • Range: 0.90 - 1.00
+INFO:app:   • High confidence (≥80%): 5/5
+INFO:app:   • Low confidence (<50%): 0/5
+INFO:app:🎯 Property 1: final_confidence=1.00 (100%)
+INFO:app:🎯 Property 2: final_confidence=1.00 (100%)
+INFO:app:🎯 Property 3: final_confidence=0.90 (90%)
+INFO:app:🎯 Property 4: final_confidence=1.00 (100%)
+INFO:app:🎯 Property 5: final_confidence=1.00 (100%)
+INFO:app:Generated and stored 5 AI suggestions
+INFO:app:AI Processing: 1 pages, 5 AI suggestions generated
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 14:45:59] "POST /api/entities/11/scrape HTTP/1.1" 200 -

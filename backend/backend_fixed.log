@@ -1,0 +1,41 @@
+INFO:app:Metadata Curation API Client initialized with base URL: http://localhost:8000
+INFO:ai_curation:AI Curation Service initialized with model: gpt-4o-mini
+INFO:httpx:HTTP Request: GET https://api.openai.com/v1/models "HTTP/1.1 200 OK"
+INFO:app:AI Curation Service initialized successfully
+INFO:app:Fetching data from Metadata Curation API...
+INFO:app:API data loaded - Sources: 3, Properties: 48, Editions: 355
+INFO:app:DEBUG: Data initialized - Sources: 3, Properties: 48, Editions: 355
+🚀 Starting Curation Preview API & Metadata-Curation mock…
+ * Serving Flask app 'app'
+ * Debug mode: off
+INFO:werkzeug:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8001
+ * Running on http://192.168.1.239:8001
+INFO:werkzeug:[33mPress CTRL+C to quit[0m
+INFO:app:Listing all sources
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 12:38:21] "GET /api/sources HTTP/1.1" 200 -
+INFO:app:Listing all sources
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 12:38:31] "GET /api/sources HTTP/1.1" 200 -
+INFO:app:Listing all properties
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 12:38:31] "GET /api/properties HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 339
+INFO:app:Processing entity 'Michael Blum' with AI=disabled
+INFO:app:Fetching existing suggestions for entity Michael Blum from external API
+INFO:app:Found 5 suggestions for entity Michael Blum
+WARNING:app:No URL found in suggestions for entity Michael Blum
+INFO:app:Generated placeholder content for real entity (no URL found): Michael Blum
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 12:38:35] "POST /api/entities/339/scrape HTTP/1.1" 200 -
+INFO:app:Listing all sources
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 12:39:37] "GET /api/sources HTTP/1.1" 200 -
+INFO:app:Listing all properties
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 12:39:37] "GET /api/properties HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 348
+INFO:app:Processing entity 'Christine Grundig' with AI=disabled
+INFO:app:Fetching existing suggestions for entity Christine Grundig from external API
+INFO:app:Found 5 suggestions for entity Christine Grundig
+WARNING:app:No URL found in suggestions for entity Christine Grundig
+INFO:app:Generated placeholder content for real entity (no URL found): Christine Grundig
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 12:39:43] "POST /api/entities/348/scrape HTTP/1.1" 200 -

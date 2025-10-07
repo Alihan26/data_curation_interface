@@ -1,0 +1,148 @@
+INFO:app:Metadata Curation API Client initialized with base URL: http://localhost:8000
+INFO:ai_curation:AI Curation Service initialized with model: gpt-4o-mini
+INFO:httpx:HTTP Request: GET https://api.openai.com/v1/models "HTTP/1.1 200 OK"
+INFO:app:AI Curation Service initialized successfully
+INFO:app:Fetching data from Metadata Curation API...
+INFO:app:API data loaded - Sources: 2, Properties: 43, Editions: 676
+INFO:app:DEBUG: Data initialized - Sources: 2, Properties: 43, Editions: 676
+🚀 Starting Curation Preview API & Metadata-Curation mock…
+ * Serving Flask app 'app'
+ * Debug mode: off
+INFO:werkzeug:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8001
+ * Running on http://192.168.1.239:8001
+INFO:werkzeug:[33mPress CTRL+C to quit[0m
+INFO:app:Scraping content for entity 2
+INFO:app:Processing entity 'None' with AI=disabled
+INFO:app:Fetching existing suggestions for entity None from external API
+INFO:app:Found 41 suggestions for entity None
+INFO:app:Found real URL for entity None: http://diglib.hab.de/edoc/ed000006/startx.htm
+INFO:app:Fetching HTML from: http://diglib.hab.de/edoc/ed000006/startx.htm
+INFO:app:Successfully processed page: Digitale Edition der Handschrift Cod. Guelf. 64 We...
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 10:46:08] "POST /api/entities/2/scrape HTTP/1.1" 200 -
+INFO:app:Listing all sources
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 10:47:37] "GET /api/sources HTTP/1.1" 200 -
+INFO:app:Listing all properties
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 10:47:37] "GET /api/properties HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 1
+INFO:app:Processing entity 'This got changed oh noo' with AI=disabled
+INFO:app:Fetching existing suggestions for entity This got changed oh noo from external API
+WARNING:app:No existing suggestions found for entity This got changed oh noo
+INFO:app:Generated placeholder content for real entity (no URL found): This got changed oh noo
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 10:47:39] "POST /api/entities/1/scrape HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 1
+INFO:app:Processing entity 'This got changed oh noo' with AI=disabled
+INFO:app:Fetching existing suggestions for entity This got changed oh noo from external API
+WARNING:app:No existing suggestions found for entity This got changed oh noo
+INFO:app:Generated placeholder content for real entity (no URL found): This got changed oh noo
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 10:47:44] "POST /api/entities/1/scrape HTTP/1.1" 200 -
+INFO:app:Listing all sources
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 10:48:43] "GET /api/sources HTTP/1.1" 200 -
+INFO:app:Listing all properties
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 10:48:43] "GET /api/properties HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 1
+INFO:app:Processing entity 'This got changed oh noo' with AI=disabled
+INFO:app:Fetching existing suggestions for entity This got changed oh noo from external API
+WARNING:app:No existing suggestions found for entity This got changed oh noo
+INFO:app:Generated placeholder content for real entity (no URL found): This got changed oh noo
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 10:48:46] "POST /api/entities/1/scrape HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 3
+INFO:app:Processing entity 'None' with AI=disabled
+INFO:app:Fetching existing suggestions for entity None from external API
+INFO:app:Found 41 suggestions for entity None
+INFO:app:Found real URL for entity None: http://www.thomasgray.org/
+INFO:app:Fetching HTML from: http://www.thomasgray.org/
+INFO:app:Successfully processed page: Thomas Gray Archive : Home...
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 10:53:23] "POST /api/entities/3/scrape HTTP/1.1" 200 -
+INFO:app:Listing all sources
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 10:53:38] "GET /api/sources HTTP/1.1" 200 -
+INFO:app:Listing all sources
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 10:54:01] "GET /api/sources HTTP/1.1" 200 -
+INFO:app:Listing all sources
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 10:54:50] "GET /api/sources HTTP/1.1" 200 -
+INFO:app:Listing all properties
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 10:54:50] "GET /api/properties HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 4
+INFO:app:Processing entity 'None' with AI=disabled
+INFO:app:Fetching existing suggestions for entity None from external API
+INFO:app:Found 41 suggestions for entity None
+INFO:app:Found real URL for entity None: http://www.dafyddapgwilym.net/
+INFO:app:Fetching HTML from: http://www.dafyddapgwilym.net/
+INFO:app:Successfully processed page: Dafydd Ap Gwilym.net...
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 10:54:53] "POST /api/entities/4/scrape HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 2
+INFO:app:Processing entity 'None' with AI=disabled
+INFO:app:Fetching existing suggestions for entity None from external API
+INFO:app:Found 41 suggestions for entity None
+INFO:app:Found real URL for entity None: http://diglib.hab.de/edoc/ed000006/startx.htm
+INFO:app:Fetching HTML from: http://diglib.hab.de/edoc/ed000006/startx.htm
+INFO:app:Successfully processed page: Digitale Edition der Handschrift Cod. Guelf. 64 We...
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 10:54:57] "POST /api/entities/2/scrape HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 1
+INFO:app:Processing entity 'This got changed oh noo' with AI=disabled
+INFO:app:Fetching existing suggestions for entity This got changed oh noo from external API
+WARNING:app:No existing suggestions found for entity This got changed oh noo
+INFO:app:Generated placeholder content for real entity (no URL found): This got changed oh noo
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 11:45:06] "POST /api/entities/1/scrape HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 1
+INFO:app:Processing entity 'This got changed oh noo' with AI=disabled
+INFO:app:Fetching existing suggestions for entity This got changed oh noo from external API
+WARNING:app:No existing suggestions found for entity This got changed oh noo
+INFO:app:Generated placeholder content for real entity (no URL found): This got changed oh noo
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 11:45:09] "POST /api/entities/1/scrape HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 338
+INFO:app:Processing entity 'None' with AI=disabled
+INFO:app:Fetching existing suggestions for entity None from external API
+INFO:app:Found 40 suggestions for entity None
+INFO:app:Found real URL for entity None: https://megadigital.bbaw.de/
+INFO:app:Fetching HTML from: https://megadigital.bbaw.de/
+INFO:app:Successfully processed page: MEGAdigital. Online-Angebot der historisch-kritisc...
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 11:45:19] "POST /api/entities/338/scrape HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 1
+INFO:app:Processing entity 'This got changed oh noo' with AI=disabled
+INFO:app:Fetching existing suggestions for entity This got changed oh noo from external API
+WARNING:app:No existing suggestions found for entity This got changed oh noo
+INFO:app:Generated placeholder content for real entity (no URL found): This got changed oh noo
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 11:45:28] "POST /api/entities/1/scrape HTTP/1.1" 200 -
+INFO:app:Listing all sources
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 11:46:35] "GET /api/sources HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 2
+INFO:app:Processing entity 'None' with AI=disabled
+INFO:app:Fetching existing suggestions for entity None from external API
+INFO:app:Found 41 suggestions for entity None
+INFO:app:Found real URL for entity None: http://diglib.hab.de/edoc/ed000006/startx.htm
+INFO:app:Fetching HTML from: http://diglib.hab.de/edoc/ed000006/startx.htm
+INFO:app:Successfully processed page: Digitale Edition der Handschrift Cod. Guelf. 64 We...
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 11:47:05] "POST /api/entities/2/scrape HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 337
+INFO:app:Processing entity 'None' with AI=disabled
+INFO:app:Fetching existing suggestions for entity None from external API
+INFO:app:Found 42 suggestions for entity None
+INFO:app:Found real URL for entity None: https://www.koenigsfelden.uzh.ch
+INFO:app:Fetching HTML from: https://www.koenigsfelden.uzh.ch
+INFO:app:Successfully processed page: Die Urkunden und Akten des Klosters und des Oberam...
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 11:47:20] "POST /api/entities/337/scrape HTTP/1.1" 200 -
+INFO:app:Listing all sources
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 11:50:34] "GET /api/sources HTTP/1.1" 200 -
+INFO:app:Listing all sources
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 11:52:28] "GET /api/sources HTTP/1.1" 200 -
+INFO:app:Listing all properties
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 11:52:28] "GET /api/properties HTTP/1.1" 200 -
+INFO:app:Listing all sources
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 11:54:07] "GET /api/sources HTTP/1.1" 200 -
+INFO:app:Listing all properties
+INFO:werkzeug:127.0.0.1 - - [07/Oct/2025 11:54:07] "GET /api/properties HTTP/1.1" 200 -

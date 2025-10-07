@@ -139,11 +139,14 @@ def _fetch_api_data() -> None:
             api_properties = curation_client.get_properties()
             DATA["properties"] = []
             for prop in api_properties:
+                # Normalize property type to uppercase for compatibility
+                prop_type = prop.get("type", "FREE_TEXT").upper()
+                
                 property_data = {
                     "id": prop.get("id"),
                     "technical_name": prop.get("technical_name", ""),
                     "name": prop.get("name", "Unknown Property"),
-                    "type": prop.get("type", "FREE_TEXT"),
+                    "type": prop_type,
                     "is_required": prop.get("is_required", False),
                     "property_options": prop.get("property_options", [])
                 }
@@ -151,20 +154,34 @@ def _fetch_api_data() -> None:
             
             # Fetch entities/editions from API
             DATA["editions"] = []
-            for source in DATA["sources"]:
-                try:
-                    entities = curation_client.get_source_entities(source["id"])
-                    for entity in entities:
-                        DATA["editions"].append({
-                            "id": entity.get("id"),
-                            "source_id": source["id"],
-                            "source_internal_id": entity.get("source_internal_id", ""),
-                            "entity_name": entity.get("source_internal_id", f"Entity {entity.get('id')}"),
-                            "entity_description": f"Entity from {source.get('name', 'Unknown Source')}",
-                            "is_dummy": False
-                        })
-                except Exception as e:
-                    logger.error(f"Failed to fetch entities for source {source['id']}: {e}")
+            try:
+                # FIXED: Call get_entities() only ONCE (it returns all entities from all sources)
+                entities = curation_client.get_entities()
+                
+                # Create source lookup for entity descriptions
+                source_lookup = {s["id"]: s["name"] for s in DATA["sources"]}
+                
+                for entity in entities:
+                    source_id = entity.get("source_id")
+                    source_name = source_lookup.get(source_id, "Unknown Source")
+                    
+                    DATA["editions"].append({
+                        "id": entity.get("id"),
+                        "source_id": source_id,
+                        "source_internal_id": entity.get("source_internal_id", ""),
+                        "entity_name": entity.get("name", entity.get("source_internal_id", f"Entity {entity.get('id')}")),
+                        "entity_description": f"Entity from {source_name}",
+                        "is_dummy": False,
+                        "context_ids": entity.get("context_ids", [])
+                    })
+            except Exception as e:
+                logger.error(f"Failed to fetch entities: {e}")
+            
+            # Initialize empty arrays for runtime data
+            DATA["suggestions"] = []
+            DATA["curation_history"] = []
+            DATA["evidence"] = []
+            DATA["publishing_state"] = []
             
             logger.info(f"API data loaded - Sources: {len(DATA['sources'])}, Properties: {len(DATA['properties'])}, Editions: {len(DATA['editions'])}")
             
@@ -774,43 +791,78 @@ def scrape_entity_content(entity_id: int):
             try:
                 if curation_client:
                     logger.info(f"Fetching existing suggestions for entity {entity['entity_name']} from external API")
-                    # Make direct HTTP request to get curation data with higher entity limit
-                    import requests
-                    api_base_url = os.getenv('CURATION_API_BASE_URL', 'http://localhost:8001')
-                    curation_url = f"{api_base_url}/sources/{source['id']}/curation-data?entity_limit=1000"
-                    response = requests.get(curation_url)
-                    response.raise_for_status()
-                    curation_data = response.json()
-                    
-                    # Find this entity in the curation data
-                    entity_data = None
-                    for api_entity in curation_data.get('entities', []):
-                        if api_entity.get('source_internal_id') == entity.get('source_internal_id'):
-                            entity_data = api_entity
-                            break
-                    
-                    if entity_data and entity_data.get('existing_suggestions'):
-                        # Look for URL suggestion (property_id: 2 is "URL")
-                        url_suggestion = None
-                        for suggestion in entity_data['existing_suggestions']:
-                            if suggestion.get('property_name') == 'URL' or suggestion.get('property_id') == 2:
-                                url_suggestion = suggestion
-                                break
+                    try:
+                        # FIXED: get_suggestions() now takes no parameters - get all suggestions and filter
+                        all_suggestions = curation_client.get_suggestions()
                         
-                        if url_suggestion and url_suggestion.get('custom_value'):
-                            real_url = url_suggestion['custom_value']
-                            logger.info(f"Found real URL for entity {entity['entity_name']}: {real_url}")
-                            urls = [real_url]
+                        # Filter suggestions for this entity
+                        entity_suggestions = [s for s in all_suggestions if s.get('entity_id') == entity["id"]]
+                        
+                        if entity_suggestions:
+                            logger.info(f"Found {len(entity_suggestions)} suggestions for entity {entity['entity_name']}")
+                            
+                            # Look for URL suggestion (property_id == 2 for URL)
+                            url_suggestion = None
+                            for suggestion in entity_suggestions:
+                                # Check if this is a URL suggestion (property_id == 2)
+                                if suggestion.get('property_id') == 2:
+                                    url_suggestion = suggestion
+                                    break
+                            
+                            if url_suggestion and url_suggestion.get('custom_value'):
+                                real_url = url_suggestion['custom_value']
+                                logger.info(f"Found real URL for entity {entity['entity_name']}: {real_url}")
+                                urls = [real_url]
+                            else:
+                                logger.warning(f"No URL found in suggestions for entity {entity['entity_name']}")
+                                # Try to get contexts and extract URLs from them (for researcher profiles)
+                                try:
+                                    contexts = curation_client.get_contexts(entity["id"])
+                                    if contexts:
+                                        logger.info(f"Found {len(contexts)} contexts for entity {entity['entity_name']}")
+                                        
+                                        # Try to extract URLs from context text
+                                        import re
+                                        extracted_urls = []
+                                        for ctx in contexts:
+                                            context_value = ctx.get('value', '')
+                                            # Find URLs in context text (http:// or https://)
+                                            found_urls = re.findall(r'https?://[^\s<>"]+', context_value)
+                                            extracted_urls.extend(found_urls)
+                                        
+                                        if extracted_urls:
+                                            # Use the first extracted URL for scraping
+                                            extracted_url = extracted_urls[0]
+                                            logger.info(f"Extracted URL from context for entity {entity['entity_name']}: {extracted_url}")
+                                            urls = [extracted_url]
+                                        else:
+                                            # No URL found in context, use context text as fallback
+                                            logger.warning(f"No URL found in context for entity {entity['entity_name']}, using context text")
+                                            context_texts = [ctx.get('value', '') for ctx in contexts]
+                                            combined_text = '\n\n'.join(context_texts)
+                                            
+                                            if combined_text.strip():
+                                                pages_data.append({
+                                                    "url": f"context://entity-{entity['id']}",
+                                                    "title": f"Entity: {entity['entity_name']}",
+                                                    "text_content": combined_text,
+                                                    "char_count": len(combined_text),
+                                                    "word_count": len(combined_text.split())
+                                                })
+                                                logger.info(f"Loaded context content for entity {entity['entity_name']}")
+                                except Exception as ctx_error:
+                                    logger.error(f"Failed to fetch contexts: {ctx_error}")
                         else:
-                            logger.warning(f"No URL found in suggestions for entity {entity['entity_name']}")
-                    else:
-                        logger.warning(f"No existing suggestions found for entity {entity['entity_name']}")
-                        
+                            logger.warning(f"No existing suggestions found for entity {entity['entity_name']}")
+                    except Exception as e:
+                        logger.error(f"Failed to fetch suggestions for entity {entity['entity_name']}: {e}")
+                        import traceback
+                        logger.error(f"Traceback: {traceback.format_exc()}")
             except Exception as e:
                 logger.error(f"Failed to fetch suggestions for entity {entity['entity_name']}: {e}")
             
-            # If we still don't have URLs, generate placeholder content
-            if not urls:
+            # If we still don't have URLs AND no content was loaded, generate placeholder
+            if not urls and not pages_data:
                 placeholder_content = f"""
                 Entity Information:
                 - Entity: {entity['entity_name']}
@@ -819,7 +871,7 @@ def scrape_entity_content(entity_id: int):
                 - Database ID: {entity['id']}
                 
                 This is a real entity from the external metadata curation API. 
-                No URL was found in the existing suggestions for this entity.
+                No URL was found and no context content is available for this entity.
                 
                 You can still curate metadata for this entity manually or with AI suggestions.
                 The AI will work with this placeholder content to generate suggestions.
@@ -832,7 +884,7 @@ def scrape_entity_content(entity_id: int):
                     "char_count": len(placeholder_content),
                     "word_count": len(placeholder_content.split())
                 })
-                logger.info(f"Generated placeholder content for real entity (no URL found): {entity['entity_name']}")
+                logger.info(f"Generated placeholder content for real entity (no URL/context found): {entity['entity_name']}")
         
         if urls:
             # URL scraping for entities (both dummy and real entities with URLs)
@@ -1726,4 +1778,4 @@ if __name__ == '__main__':
     # Initialize data (API or dummy) before starting the server
     _fetch_api_data()
     logger.info(f"DEBUG: Data initialized - Sources: {len(DATA['sources'])}, Properties: {len(DATA['properties'])}, Editions: {len(DATA['editions'])}")
-    app.run(debug=False, host='0.0.0.0', port=8000)
+    app.run(debug=False, host='0.0.0.0', port=8001)
