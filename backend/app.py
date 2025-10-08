@@ -733,6 +733,90 @@ def fetch_html(url):
     response.raise_for_status()
     return response.text
 
+
+def _extract_structured_content(soup, url):
+    """
+    Extract structured content from HTML while preserving layout structure.
+    Returns a structured representation of headers, navigation, main content, footer.
+    """
+    structured = {
+        "navigation": None,
+        "header": None,
+        "main_sections": [],
+        "footer": None
+    }
+    
+    # Extract navigation (nav, header with menu items)
+    nav_elements = soup.find_all(['nav', 'header'], limit=3)
+    if nav_elements:
+        nav_text = []
+        for nav in nav_elements:
+            text = nav.get_text(separator=' ', strip=True)
+            if text and len(text) < 500:  # Keep navigation concise
+                nav_text.append(text)
+        if nav_text:
+            structured["navigation"] = ' | '.join(nav_text)
+    
+    # Extract main headers (h1, h2 at page top)
+    headers = []
+    for tag in ['h1', 'h2']:
+        h_tags = soup.find_all(tag, limit=3)
+        for h in h_tags:
+            text = h.get_text(strip=True)
+            if text:
+                headers.append({"level": tag, "text": text})
+    structured["header"] = headers
+    
+    # Extract main content sections
+    # Look for main, article, or sections with meaningful content
+    main_container = soup.find('main') or soup.find('article') or soup.find('body')
+    
+    if main_container:
+        # Find all section-like structures
+        sections = main_container.find_all(['section', 'div'], class_=lambda x: x and any(
+            keyword in str(x).lower() for keyword in ['content', 'main', 'bio', 'profile', 'info', 'about']
+        ))
+        
+        if not sections:
+            # Fallback: look for divs with substantial text
+            sections = main_container.find_all(['div', 'section'], recursive=False)
+        
+        for section in sections[:10]:  # Limit to 10 sections
+            # Extract section header
+            section_header = section.find(['h1', 'h2', 'h3', 'h4'])
+            section_title = section_header.get_text(strip=True) if section_header else None
+            
+            # Extract paragraphs
+            paragraphs = []
+            for p in section.find_all('p', limit=20):
+                text = p.get_text(strip=True)
+                if text and len(text) > 20:  # Skip very short paragraphs
+                    paragraphs.append(text)
+            
+            # Extract lists
+            lists = []
+            for ul in section.find_all(['ul', 'ol'], limit=5):
+                items = [li.get_text(strip=True) for li in ul.find_all('li', limit=10)]
+                if items:
+                    lists.append(items)
+            
+            if paragraphs or lists:
+                structured["main_sections"].append({
+                    "title": section_title,
+                    "paragraphs": paragraphs,
+                    "lists": lists
+                })
+    
+    # Extract footer
+    footer = soup.find('footer')
+    if footer:
+        footer_text = footer.get_text(separator=' ', strip=True)
+        if footer_text and len(footer_text) < 300:
+            structured["footer"] = footer_text
+    
+    return structured
+
+
 @app.route('/api/health', methods=['GET'])
 def health_check():
     return jsonify({"status": "healthy"})
@@ -894,16 +978,22 @@ def scrape_entity_content(entity_id: int):
                     html = fetch_html(url)
                     soup = BeautifulSoup(html, "html.parser")
                     title = soup.title.string if soup.title else url
+                    
+                    # Extract structured content preserving webpage layout
+                    structured_content = _extract_structured_content(soup, url)
+                    
+                    # Also get plain text for fallback
                     text_content = soup.get_text()
                     text_content = ' '.join(text_content.split())
 
-                    if len(text_content) > 5000:
-                        text_content = text_content[:5000] + "... [Content truncated]"
+                    if len(text_content) > 10000:
+                        text_content = text_content[:10000] + "... [Content truncated]"
 
                     pages_data.append({
                         "url": url,
                         "title": title,
                         "text_content": text_content,
+                        "structured_content": structured_content,
                         "char_count": len(text_content),
                         "word_count": len(text_content.split())
                     })
@@ -914,6 +1004,7 @@ def scrape_entity_content(entity_id: int):
                         "url": url,
                         "title": f"Error: {str(e)}",
                         "text_content": f"Failed to fetch: {str(e)}",
+                        "structured_content": None,
                         "char_count": 0,
                         "word_count": 0
                     })

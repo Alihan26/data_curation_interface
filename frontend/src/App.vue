@@ -197,8 +197,48 @@
           <div v-if="currentPage" class="page-content">
             <h3 class="page-title">{{ currentPage.title }}</h3>
             <div class="page-url">{{ currentPage.url }}</div>
-          <div class="content-text" v-html="highlightedContent"></div>
-        </div>
+            
+            <!-- Structured Content Display -->
+            <div v-if="currentPage.structured_content" class="structured-page">
+              <!-- Navigation Bar -->
+              <div v-if="currentPage.structured_content.navigation" class="page-navigation-bar">
+                <div class="nav-label">🧭 Navigation:</div>
+                <div class="nav-content">{{ currentPage.structured_content.navigation }}</div>
+              </div>
+              
+              <!-- Page Headers -->
+              <div v-if="currentPage.structured_content.header && currentPage.structured_content.header.length" class="page-headers">
+                <h1 v-for="(header, idx) in currentPage.structured_content.header.filter(h => h.level === 'h1')" :key="'h1-' + idx" class="main-header" v-html="highlightText(header.text)"></h1>
+                <h2 v-for="(header, idx) in currentPage.structured_content.header.filter(h => h.level === 'h2')" :key="'h2-' + idx" class="sub-header" v-html="highlightText(header.text)"></h2>
+              </div>
+              
+              <!-- Main Content Sections -->
+              <div v-if="currentPage.structured_content.main_sections && currentPage.structured_content.main_sections.length" class="main-content-sections">
+                <div v-for="(section, idx) in currentPage.structured_content.main_sections" :key="'section-' + idx" class="content-section">
+                  <h3 v-if="section.title" class="section-title" v-html="highlightText(section.title)"></h3>
+                  
+                  <div v-if="section.paragraphs && section.paragraphs.length" class="section-paragraphs">
+                    <p v-for="(para, pIdx) in section.paragraphs" :key="'p-' + pIdx" class="section-paragraph" v-html="highlightText(para)"></p>
+                  </div>
+                  
+                  <div v-if="section.lists && section.lists.length" class="section-lists">
+                    <ul v-for="(list, lIdx) in section.lists" :key="'list-' + lIdx" class="section-list">
+                      <li v-for="(item, iIdx) in list" :key="'item-' + iIdx" v-html="highlightText(item)"></li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Footer -->
+              <div v-if="currentPage.structured_content.footer" class="page-footer">
+                <div class="footer-label">Footer:</div>
+                <div class="footer-content">{{ currentPage.structured_content.footer }}</div>
+              </div>
+            </div>
+            
+            <!-- Fallback: Plain text with highlighting (when no structured content) -->
+            <div v-else class="content-text" v-html="highlightedContent"></div>
+          </div>
             </div>
           </div>
           
@@ -250,17 +290,18 @@
             >
               <!-- Field Header -->
               <div class="field-header">
-                <h3 class="field-name">{{ field.name }}</h3>
-                <div class="field-badges">
-                  <span v-if="field.is_required" class="required-badge">Required</span>
-                  <span class="field-type-badge">{{ field.type }}</span>
-                  <span v-if="field.showAISuggestion" class="ai-badge">AI</span>
-                  <span v-if="field.showAISuggestion && field.aiSuggestion.confidence" class="confidence-badge">
-                    {{ Math.round(field.aiSuggestion.confidence * 100) }}%
-                      </span>
-                  <span v-if="!curationStarted" class="preview-badge">Preview</span>
-                    </div>
-                  </div>
+                <div class="field-header-left">
+                  <h3 class="field-name">{{ field.name }}</h3>
+                  <span v-if="field.is_required" class="required-indicator">*</span>
+                </div>
+                <div class="field-header-right">
+                  <span class="field-type-label">{{ field.type.replace('_', ' ').toLowerCase() }}</span>
+                  <span v-if="field.showAISuggestion && field.aiSuggestion.confidence" class="ai-confidence-badge">
+                    🤖 {{ Math.round(field.aiSuggestion.confidence * 100) }}%
+                  </span>
+                  <span v-if="!curationStarted" class="preview-label">PREVIEW</span>
+                </div>
+              </div>
                   
               <!-- Pre-Curation Preview (just show field names and types) -->
               <div v-if="!curationStarted" class="field-preview">
@@ -274,43 +315,52 @@
 
               <!-- AI Suggestion Section (when curation started, AI enabled, and suggestion exists) -->
               <div v-else-if="curationStarted && field.showAISuggestion" class="ai-suggestion-section">
-                <div class="suggestion-value">
-                  <strong>AI Suggested Value:</strong>
-                  <span class="suggested-value">{{ renderSuggestionValue(field.aiSuggestion) }}</span>
+                <!-- AI Suggested Value -->
+                <div class="suggestion-value-container">
+                  <div class="suggestion-label">Suggested:</div>
+                  <div class="suggested-value-display">{{ renderSuggestionValue(field.aiSuggestion) }}</div>
                 </div>
 
-                <div v-if="field.aiSuggestion.evidence" class="suggestion-evidence">
-                  <strong>Evidence:</strong>
-                  <span class="evidence-text">{{ getSuggestionEvidence(field.aiSuggestion) }}</span>
+                <!-- AI Reasoning (simple, no box) -->
+                <div v-if="field.aiSuggestion.reasoning" class="ai-reasoning">
+                  <div class="reasoning-label">AI Reasoning:</div>
+                  <div class="reasoning-text">
+                    <span v-if="!field.reasoningExpanded && field.aiSuggestion.reasoning.length > 500">
+                      {{ field.aiSuggestion.reasoning.substring(0, 500) }}
+                      <span class="expand-link" @click.stop="toggleReasoning(field)">... read more</span>
+                    </span>
+                    <span v-else>
+                      {{ field.aiSuggestion.reasoning }}
+                      <span v-if="field.reasoningExpanded" class="collapse-link" @click.stop="toggleReasoning(field)"> show less</span>
+                    </span>
+                  </div>
                 </div>
 
-                <div v-if="field.aiSuggestion.reasoning" class="suggestion-reasoning">
-                  <strong>AI Reasoning:</strong>
-                  <span class="reasoning-text">{{ getSuggestionReasoning(field.aiSuggestion) }}</span>
-                </div>
-
-                <!-- AI Suggestion Actions -->
+                <!-- AI Suggestion Actions (redesigned) -->
                 <div class="suggestion-actions">
                   <button 
                     v-if="field.aiSuggestion.status === 'pending'"
                     @click.stop="acceptSuggestion(field.aiSuggestion)"
                     class="action-btn accept-btn" 
                   >
-                    Accept
+                    <span class="btn-icon">✓</span>
+                    <span class="btn-text">Accept</span>
                   </button>
                   <button 
                     v-if="field.aiSuggestion.status === 'pending'"
                     @click.stop="rejectSuggestion(field.aiSuggestion)"
                     class="action-btn reject-btn" 
                   >
-                    Reject
+                    <span class="btn-icon">✕</span>
+                    <span class="btn-text">Reject</span>
                   </button>
-                  <button 
+                  <button
                     v-if="field.aiSuggestion.status === 'pending'"
                     @click.stop="editSuggestion(field.aiSuggestion)"
-                    class="action-btn edit-btn"
+                    class="action-btn edit-btn" 
                   >
-                    Edit
+                    <span class="btn-icon">✎</span>
+                    <span class="btn-text">Edit</span>
                   </button>
                   <div v-else class="status-display" :class="getStatusClass(field.aiSuggestion)">
                     {{ field.aiSuggestion.status.toUpperCase() }}
@@ -555,7 +605,8 @@ export default {
           manualValue: this.manualValues[property.id] || '',
           showAISuggestion,
           needsManualEntry,
-          isInteractive: this.curationStarted
+          isInteractive: this.curationStarted,
+          reasoningExpanded: false  // For expand/collapse functionality
         }
       })
       
@@ -885,20 +936,57 @@ export default {
       return option ? option.name : ''
     },
     
-    getSuggestionEvidence(suggestion) {
-      if (!suggestion.evidence) return 'No evidence'
-      if (typeof suggestion.evidence === 'string') return suggestion.evidence
-      if (suggestion.evidence.content) {
-        const content = suggestion.evidence.content
-        return content.length > 100 ? content.substring(0, 100) + '...' : content
-      }
-      return 'Evidence available'
+    toggleReasoning(field) {
+      // Toggle the reasoning expanded state
+      field.reasoningExpanded = !field.reasoningExpanded
+      this.$forceUpdate() // Force re-render
     },
     
-    getSuggestionReasoning(suggestion) {
-      if (!suggestion.reasoning) return 'No reasoning provided'
-      const reasoning = suggestion.reasoning
-      return reasoning.length > 150 ? reasoning.substring(0, 150) + '...' : reasoning
+    highlightText(text) {
+      // Apply evidence highlighting to a text snippet (for structured content)
+      if (!text || !this.aiSuggestions || !this.currentPage) return text
+      
+      let highlighted = text
+      let replacementCounter = 0
+      
+      const aiSugs = this.aiSuggestions.filter(s => 
+        s.evidence && 
+        s.page_url === this.currentPage.url
+      )
+      
+      for (const sug of aiSugs) {
+        const evidenceText = typeof sug.evidence === 'string' ? sug.evidence : sug.evidence.content
+        
+        if (!evidenceText || !highlighted.includes(evidenceText)) continue
+        
+        const propertyName = this.getPropertyName(sug.property_id)
+        const isActive = this.activeHighlightId === sug.id
+        
+        // Purple color scheme: active = dark purple, inactive = light purple
+        let highlightColor = isActive ? '#8B5CF6' : '#F0E6FF'
+        
+        // Create unique placeholder
+        const placeholder = `__HIGHLIGHT_${sug.id}_${replacementCounter}__`
+        replacementCounter++
+        
+        // Replace with placeholder first
+        highlighted = highlighted.replace(
+          evidenceText,
+          placeholder
+        )
+        
+        // Then replace placeholder with styled span (same as main highlighting system)
+        highlighted = highlighted.replace(
+          placeholder,
+          `<span class="ai-highlight" 
+                 data-suggestion-id="${sug.id}"
+                 style="background-color: ${highlightColor}; padding: 2px 4px; border-radius: 3px; cursor: pointer; transition: background-color 0.2s ease;" 
+                 title="${propertyName}: ${evidenceText.substring(0, 100)}"
+                 onclick="window.activateHighlight && window.activateHighlight(${sug.id})">${evidenceText}</span>`
+        )
+      }
+      
+      return highlighted
     },
     
     getStatusClass(suggestion) {
@@ -1734,10 +1822,137 @@ html, body {
 .ai-highlight {
   cursor: pointer;
   transition: all 0.2s ease;
+  padding: 2px 4px;
+  border-radius: 3px;
 }
 
 .ai-highlight:hover {
-  background-color: #C4B5FD !important;
+  background-color: #A78BFA !important;
+  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+}
+
+/* Structured Page Content */
+.structured-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-height: 500px;
+  overflow-y: auto;
+  padding: 1rem;
+  background: #fafafa;
+  border-radius: 0.5rem;
+}
+
+.page-navigation-bar {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  padding: 0.75rem 1rem;
+  border-radius: 0.375rem;
+  border-left: 4px solid #2196f3;
+  font-size: 0.85rem;
+  color: #1565c0;
+}
+
+.nav-label {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.nav-content {
+  color: #666;
+  line-height: 1.6;
+}
+
+.page-headers {
+  border-bottom: 2px solid #e0e0e0;
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+}
+
+.main-header {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 0.5rem 0;
+  line-height: 1.3;
+}
+
+.sub-header {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #444;
+  margin: 0.25rem 0 0 0;
+  line-height: 1.4;
+}
+
+.main-content-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.content-section {
+  background: white;
+  padding: 1.25rem;
+  border-radius: 0.5rem;
+  border: 1px solid #e8e8e8;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0 0 1rem 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.section-paragraphs {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.section-paragraph {
+  line-height: 1.8;
+  color: #333;
+  margin: 0;
+  text-align: justify;
+}
+
+.section-lists {
+  margin: 1rem 0;
+}
+
+.section-list {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+}
+
+.section-list li {
+  line-height: 1.8;
+  color: #444;
+  margin: 0.25rem 0;
+}
+
+.page-footer {
+  background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+  padding: 0.75rem 1rem;
+  border-radius: 0.375rem;
+  border-top: 2px solid #d0d0d0;
+  font-size: 0.85rem;
+  margin-top: auto;
+}
+
+.footer-label {
+  font-weight: 600;
+  color: #666;
+  margin-bottom: 0.25rem;
+}
+
+.footer-content {
+  color: #888;
+  line-height: 1.6;
 }
 
 /* Metadata content */
@@ -1879,34 +2094,63 @@ html, body {
 .field-header {
   display: flex;
   justify-content: space-between;
-  align-items: start;
+  align-items: center;
   margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #f0f0f0;
 }
 
-.field-name {
-  font-size: 1rem;
-  font-weight: 600;
-  margin: 0;
-}
-
-.field-badges {
+.field-header-left {
   display: flex;
+  align-items: center;
   gap: 0.5rem;
 }
 
-.required-badge, .field-type-badge, .ai-badge, .confidence-badge, .preview-badge {
-  padding: 0.3rem 0.75rem;
-  border-radius: 1rem;
-  font-size: 0.7rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+.field-header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
-.required-badge {
-  background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
-  color: #c62828;
+.field-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+  color: #1a1a1a;
+}
+
+.required-indicator {
+  color: #ef4444;
+  font-size: 1.3rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.field-type-label {
+  font-size: 0.75rem;
+  color: #6b7280;
+  text-transform: capitalize;
+  font-weight: 500;
+}
+
+.ai-confidence-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.375rem 0.75rem;
+  background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+  color: white;
+  border-radius: 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(139, 92, 246, 0.3);
+}
+
+.preview-label {
+  font-size: 0.7rem;
+  color: #9ca3af;
+  font-weight: 600;
+  letter-spacing: 0.5px;
   border: 1px solid #ffcdd2;
 }
 
@@ -1934,87 +2178,143 @@ html, body {
   border: 1px solid #ffe0b2;
 }
 
-/* AI Suggestion Section */
+/* AI Suggestion Section - Redesigned */
 .ai-suggestion-section {
-  background: linear-gradient(135deg, #f0f8ff 0%, #f8f9ff 100%);
-  padding: 1.25rem;
-  border-radius: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.suggestion-value-container {
   margin-bottom: 1rem;
-  border: 1px solid #e3f2fd;
-  box-shadow: 0 2px 8px rgba(33, 150, 243, 0.08);
 }
 
-.suggestion-value {
-  margin-bottom: 0.75rem;
-  font-size: 0.9rem;
-}
-
-.suggested-value {
+.suggestion-label {
+  font-size: 0.8rem;
   font-weight: 600;
-  color: #1976d2;
+  color: #6b7280;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.suggestion-evidence, .suggestion-reasoning {
-  margin-bottom: 0.75rem;
-  font-size: 0.85rem;
-  color: #666;
+.suggested-value-display {
+  background: white;
+  padding: 0.875rem 1.125rem;
+  border-radius: 0.5rem;
+  border: 2px solid #8B5CF6;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  line-height: 1.5;
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.15);
 }
 
-.evidence-text, .reasoning-text {
-  display: block;
-  margin-top: 0.25rem;
-  font-style: italic;
+.ai-reasoning {
+  margin-bottom: 1rem;
+}
+
+.reasoning-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #6b7280;
+  margin-bottom: 0.5rem;
+}
+
+.reasoning-text {
+  font-size: 0.9rem;
+  color: #374151;
+  line-height: 1.7;
+}
+
+.expand-link, .collapse-link {
+  color: #8B5CF6;
+  cursor: pointer;
+  font-weight: 600;
+  font-style: normal;
+  text-decoration: none;
+  user-select: none;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  background: rgba(139, 92, 246, 0.1);
+  transition: all 0.2s;
+}
+
+.expand-link:hover, .collapse-link:hover {
+  background: rgba(139, 92, 246, 0.2);
+  color: #7C3AED;
 }
 
 .suggestion-actions {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.75rem;
   align-items: center;
+  margin-top: 1rem;
 }
 
 .action-btn {
-  padding: 0.5rem 1rem;
-  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  border: 2px solid transparent;
   border-radius: 0.5rem;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  min-width: 80px;
+  transition: all 0.2s ease;
+  flex: 1;
+  min-width: 90px;
+}
+
+.btn-icon {
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.btn-text {
+  font-size: 0.9rem;
 }
 
 .accept-btn {
-  background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
   color: white;
+  border-color: #06b6d4;
 }
 
 .accept-btn:hover {
-  background: linear-gradient(135deg, #45a049 0%, #388e3c 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+  background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
+  border-color: #0891b2;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(6, 182, 212, 0.4);
 }
 
 .reject-btn {
-  background: linear-gradient(135deg, #f44336 0%, #e53935 100%);
+  background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
   color: white;
+  border-color: #ec4899;
 }
 
 .reject-btn:hover {
-  background: linear-gradient(135deg, #e53935 0%, #d32f2f 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(244, 67, 54, 0.3);
+  background: linear-gradient(135deg, #db2777 0%, #be185d 100%);
+  border-color: #db2777;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(236, 72, 153, 0.4);
 }
 
 .edit-btn {
-  background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+  background: linear-gradient(135deg, #a78bfa 0%, #9333ea 100%);
   color: white;
+  border-color: #a78bfa;
 }
 
 .edit-btn:hover {
-  background: linear-gradient(135deg, #f57c00 0%, #ef6c00 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
+  background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);
+  border-color: #9333ea;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(167, 139, 250, 0.4);
 }
 
 .status-display {

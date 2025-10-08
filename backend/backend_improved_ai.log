@@ -1,0 +1,429 @@
+INFO:app:Metadata Curation API Client initialized with base URL: http://localhost:8000
+INFO:ai_curation:AI Curation Service initialized with model: gpt-4o-mini
+INFO:httpx:HTTP Request: GET https://api.openai.com/v1/models "HTTP/1.1 200 OK"
+INFO:app:AI Curation Service initialized successfully
+INFO:app:Fetching data from Metadata Curation API...
+INFO:app:API data loaded - Sources: 1, Properties: 5, Editions: 17
+INFO:app:DEBUG: Data initialized - Sources: 1, Properties: 5, Editions: 17
+🚀 Starting Curation Preview API & Metadata-Curation mock…
+ * Serving Flask app 'app'
+ * Debug mode: off
+INFO:werkzeug:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8001
+ * Running on http://192.168.1.239:8001
+INFO:werkzeug:[33mPress CTRL+C to quit[0m
+INFO:app:Scraping content for entity 1
+INFO:app:Processing entity 'Michael Blum' with AI=enabled
+INFO:app:Fetching existing suggestions for entity Michael Blum from external API
+INFO:app:Found 5 suggestions for entity Michael Blum
+WARNING:app:No URL found in suggestions for entity Michael Blum
+INFO:app:Found 2 contexts for entity Michael Blum
+INFO:app:Extracted URL from context for entity Michael Blum: https://www.ifi.uzh.ch/en/ivda/team/michael_blum.html
+INFO:app:Fetching HTML from: https://www.ifi.uzh.ch/en/ivda/team/michael_blum.html
+INFO:app:Successfully processed page: Michael Blum | Department of Informatics  | UZH...
+INFO:app:AI suggestions requested, generating for each page
+INFO:app:DEBUG: Properties count: 5
+INFO:app:DEBUG: First property: {'id': 1, 'technical_name': 'department', 'name': 'Department', 'type': 'MULTIPLE_CHOICE', 'is_required': False, 'property_options': [{'name': 'Department of Informatics', 'created_at': '2025-10-07T13:56:06.616610', 'id': 1, 'property_id': 1}, {'name': 'Department of Digital Humanities', 'created_at': '2025-10-07T13:56:06.616766', 'id': 2, 'property_id': 1}, {'name': 'Department of Theology', 'created_at': '2025-10-07T13:56:06.616877', 'id': 3, 'property_id': 1}, {'name': 'Department of Computational Linguistics', 'created_at': '2025-10-07T13:56:06.616982', 'id': 4, 'property_id': 1}, {'name': 'Department of Art History', 'created_at': '2025-10-07T13:56:06.617111', 'id': 5, 'property_id': 1}, {'name': 'Department of Greek and Latin Philology', 'created_at': '2025-10-07T13:56:06.617235', 'id': 6, 'property_id': 1}, {'name': 'Department of History', 'created_at': '2025-10-07T13:56:06.617351', 'id': 7, 'property_id': 1}, {'name': 'Department of Computational Linguistics; Linguistic Research Infrastructuree (LiRI)', 'created_at': '2025-10-07T13:56:06.617455', 'id': 8, 'property_id': 1}, {'name': 'Department of Film Studies', 'created_at': '2025-10-07T13:56:06.617560', 'id': 9, 'property_id': 1}]}
+INFO:app:DEBUG: Pages data count: 1
+INFO:app:DEBUG: First page text length: 2580
+INFO:app:Using source_id: 1, edition_id: 1
+INFO:app:DEBUG: Processing page: https://www.ifi.uzh.ch/en/ivda/team/michael_blum.html
+INFO:app:DEBUG: Page text content length: 2580
+INFO:app:🤖 Starting two-pass AI confidence system
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:ai_curation:Reasoner produced 5 suggestions (no confidence)
+INFO:app:🧠 Agent A (Reasoner) generated 5 reasoned suggestions
+INFO:app:DEBUG: Reasoner suggestions: 5
+INFO:ai_curation:Validated 5 suggestions from AI
+INFO:app:DEBUG: Validated (two-pass) suggestions: 5
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:ai_curation:Interpreter produced confidences for 5 properties
+INFO:app:🎯 Agent B (Interpreter) processed 5 confidence interpretations
+INFO:app:📊 Two-pass confidence distribution:
+INFO:app:   • Average: 0.76
+INFO:app:   • Range: 0.55 - 0.85
+INFO:app:   • High confidence (≥80%): 3/5
+INFO:app:   • Low confidence (<50%): 0/5
+INFO:app:🎯 Property 1: final_confidence=0.85 (85%)
+INFO:app:🎯 Property 2: final_confidence=0.85 (85%)
+INFO:app:🎯 Property 3: final_confidence=0.55 (55%)
+INFO:app:🎯 Property 4: final_confidence=0.85 (85%)
+INFO:app:🎯 Property 5: final_confidence=0.70 (70%)
+INFO:app:Generated and stored 5 AI suggestions
+INFO:app:AI Processing: 1 pages, 5 AI suggestions generated
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 01:41:27] "POST /api/entities/1/scrape HTTP/1.1" 200 -
+INFO:app:Listing all sources
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 01:42:23] "GET /api/sources HTTP/1.1" 200 -
+INFO:app:Listing all properties
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 01:42:23] "GET /api/properties HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 1
+INFO:app:Processing entity 'Michael Blum' with AI=disabled
+INFO:app:Fetching existing suggestions for entity Michael Blum from external API
+INFO:app:Found 5 suggestions for entity Michael Blum
+WARNING:app:No URL found in suggestions for entity Michael Blum
+INFO:app:Found 2 contexts for entity Michael Blum
+INFO:app:Extracted URL from context for entity Michael Blum: https://www.ifi.uzh.ch/en/ivda/team/michael_blum.html
+INFO:app:Fetching HTML from: https://www.ifi.uzh.ch/en/ivda/team/michael_blum.html
+INFO:app:Successfully processed page: Michael Blum | Department of Informatics  | UZH...
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 01:42:27] "POST /api/entities/1/scrape HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 1
+INFO:app:Processing entity 'Michael Blum' with AI=disabled
+INFO:app:Fetching existing suggestions for entity Michael Blum from external API
+INFO:app:Found 5 suggestions for entity Michael Blum
+WARNING:app:No URL found in suggestions for entity Michael Blum
+INFO:app:Found 2 contexts for entity Michael Blum
+INFO:app:Extracted URL from context for entity Michael Blum: https://www.ifi.uzh.ch/en/ivda/team/michael_blum.html
+INFO:app:Fetching HTML from: https://www.ifi.uzh.ch/en/ivda/team/michael_blum.html
+INFO:app:Successfully processed page: Michael Blum | Department of Informatics  | UZH...
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 01:42:29] "POST /api/entities/1/scrape HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 1
+INFO:app:Processing entity 'Michael Blum' with AI=enabled
+INFO:app:Fetching existing suggestions for entity Michael Blum from external API
+INFO:app:Found 5 suggestions for entity Michael Blum
+WARNING:app:No URL found in suggestions for entity Michael Blum
+INFO:app:Found 2 contexts for entity Michael Blum
+INFO:app:Extracted URL from context for entity Michael Blum: https://www.ifi.uzh.ch/en/ivda/team/michael_blum.html
+INFO:app:Fetching HTML from: https://www.ifi.uzh.ch/en/ivda/team/michael_blum.html
+INFO:app:Successfully processed page: Michael Blum | Department of Informatics  | UZH...
+INFO:app:AI suggestions requested, generating for each page
+INFO:app:DEBUG: Properties count: 5
+INFO:app:DEBUG: First property: {'id': 1, 'technical_name': 'department', 'name': 'Department', 'type': 'MULTIPLE_CHOICE', 'is_required': False, 'property_options': [{'name': 'Department of Informatics', 'created_at': '2025-10-07T13:56:06.616610', 'id': 1, 'property_id': 1}, {'name': 'Department of Digital Humanities', 'created_at': '2025-10-07T13:56:06.616766', 'id': 2, 'property_id': 1}, {'name': 'Department of Theology', 'created_at': '2025-10-07T13:56:06.616877', 'id': 3, 'property_id': 1}, {'name': 'Department of Computational Linguistics', 'created_at': '2025-10-07T13:56:06.616982', 'id': 4, 'property_id': 1}, {'name': 'Department of Art History', 'created_at': '2025-10-07T13:56:06.617111', 'id': 5, 'property_id': 1}, {'name': 'Department of Greek and Latin Philology', 'created_at': '2025-10-07T13:56:06.617235', 'id': 6, 'property_id': 1}, {'name': 'Department of History', 'created_at': '2025-10-07T13:56:06.617351', 'id': 7, 'property_id': 1}, {'name': 'Department of Computational Linguistics; Linguistic Research Infrastructuree (LiRI)', 'created_at': '2025-10-07T13:56:06.617455', 'id': 8, 'property_id': 1}, {'name': 'Department of Film Studies', 'created_at': '2025-10-07T13:56:06.617560', 'id': 9, 'property_id': 1}]}
+INFO:app:DEBUG: Pages data count: 1
+INFO:app:DEBUG: First page text length: 2580
+INFO:app:Using source_id: 1, edition_id: 1
+INFO:app:Removing 5 existing AI suggestions for source_id=1, edition_id=1
+INFO:app:Remaining suggestions after cleanup: 0
+INFO:app:DEBUG: Processing page: https://www.ifi.uzh.ch/en/ivda/team/michael_blum.html
+INFO:app:DEBUG: Page text content length: 2580
+INFO:app:🤖 Starting two-pass AI confidence system
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:ai_curation:Reasoner produced 5 suggestions (no confidence)
+INFO:app:🧠 Agent A (Reasoner) generated 5 reasoned suggestions
+INFO:app:DEBUG: Reasoner suggestions: 5
+INFO:ai_curation:Validated 5 suggestions from AI
+INFO:app:DEBUG: Validated (two-pass) suggestions: 5
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:ai_curation:Interpreter produced confidences for 5 properties
+INFO:app:🎯 Agent B (Interpreter) processed 5 confidence interpretations
+INFO:app:📊 Two-pass confidence distribution:
+INFO:app:   • Average: 0.75
+INFO:app:   • Range: 0.55 - 0.85
+INFO:app:   • High confidence (≥80%): 3/5
+INFO:app:   • Low confidence (<50%): 0/5
+INFO:app:🎯 Property 1: final_confidence=0.85 (85%)
+INFO:app:🎯 Property 2: final_confidence=0.85 (85%)
+INFO:app:🎯 Property 3: final_confidence=0.55 (55%)
+INFO:app:🎯 Property 4: final_confidence=0.70 (70%)
+INFO:app:🎯 Property 5: final_confidence=0.80 (80%)
+INFO:app:Generated and stored 5 AI suggestions
+INFO:app:AI Processing: 1 pages, 5 AI suggestions generated
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 01:42:52] "POST /api/entities/1/scrape HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 2
+INFO:app:Processing entity 'Moritz Mähr' with AI=enabled
+INFO:app:Fetching existing suggestions for entity Moritz Mähr from external API
+INFO:app:Found 5 suggestions for entity Moritz Mähr
+WARNING:app:No URL found in suggestions for entity Moritz Mähr
+INFO:app:Found 2 contexts for entity Moritz Mähr
+INFO:app:Extracted URL from context for entity Moritz Mähr: https://www.dh.unibe.ch/ueber_uns/personen/dr_sc_maehr_moritz/index_ger.html
+INFO:app:Fetching HTML from: https://www.dh.unibe.ch/ueber_uns/personen/dr_sc_maehr_moritz/index_ger.html
+INFO:app:Successfully processed page: Über uns: Dr. sc. Moritz Mähr - Digital Humanities...
+INFO:app:AI suggestions requested, generating for each page
+INFO:app:DEBUG: Properties count: 5
+INFO:app:DEBUG: First property: {'id': 1, 'technical_name': 'department', 'name': 'Department', 'type': 'MULTIPLE_CHOICE', 'is_required': False, 'property_options': [{'name': 'Department of Informatics', 'created_at': '2025-10-07T13:56:06.616610', 'id': 1, 'property_id': 1}, {'name': 'Department of Digital Humanities', 'created_at': '2025-10-07T13:56:06.616766', 'id': 2, 'property_id': 1}, {'name': 'Department of Theology', 'created_at': '2025-10-07T13:56:06.616877', 'id': 3, 'property_id': 1}, {'name': 'Department of Computational Linguistics', 'created_at': '2025-10-07T13:56:06.616982', 'id': 4, 'property_id': 1}, {'name': 'Department of Art History', 'created_at': '2025-10-07T13:56:06.617111', 'id': 5, 'property_id': 1}, {'name': 'Department of Greek and Latin Philology', 'created_at': '2025-10-07T13:56:06.617235', 'id': 6, 'property_id': 1}, {'name': 'Department of History', 'created_at': '2025-10-07T13:56:06.617351', 'id': 7, 'property_id': 1}, {'name': 'Department of Computational Linguistics; Linguistic Research Infrastructuree (LiRI)', 'created_at': '2025-10-07T13:56:06.617455', 'id': 8, 'property_id': 1}, {'name': 'Department of Film Studies', 'created_at': '2025-10-07T13:56:06.617560', 'id': 9, 'property_id': 1}]}
+INFO:app:DEBUG: Pages data count: 1
+INFO:app:DEBUG: First page text length: 2809
+INFO:app:Using source_id: 1, edition_id: 2
+INFO:app:DEBUG: Processing page: https://www.dh.unibe.ch/ueber_uns/personen/dr_sc_maehr_moritz/index_ger.html
+INFO:app:DEBUG: Page text content length: 2809
+INFO:app:🤖 Starting two-pass AI confidence system
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:ai_curation:Reasoner produced 5 suggestions (no confidence)
+INFO:app:🧠 Agent A (Reasoner) generated 5 reasoned suggestions
+INFO:app:DEBUG: Reasoner suggestions: 5
+INFO:ai_curation:Validated 5 suggestions from AI
+INFO:app:DEBUG: Validated (two-pass) suggestions: 5
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:ai_curation:Interpreter produced confidences for 5 properties
+INFO:app:🎯 Agent B (Interpreter) processed 5 confidence interpretations
+INFO:app:📊 Two-pass confidence distribution:
+INFO:app:   • Average: 0.83
+INFO:app:   • Range: 0.65 - 0.90
+INFO:app:   • High confidence (≥80%): 4/5
+INFO:app:   • Low confidence (<50%): 0/5
+INFO:app:🎯 Property 1: final_confidence=0.85 (85%)
+INFO:app:🎯 Property 2: final_confidence=0.85 (85%)
+INFO:app:🎯 Property 3: final_confidence=0.65 (65%)
+INFO:app:🎯 Property 4: final_confidence=0.90 (90%)
+INFO:app:🎯 Property 5: final_confidence=0.90 (90%)
+INFO:app:Generated and stored 5 AI suggestions
+INFO:app:AI Processing: 1 pages, 5 AI suggestions generated
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 01:43:53] "POST /api/entities/2/scrape HTTP/1.1" 200 -
+INFO:app:Listing all sources
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 01:44:10] "GET /api/sources HTTP/1.1" 200 -
+INFO:app:Listing all properties
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 01:44:10] "GET /api/properties HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 2
+INFO:app:Processing entity 'Moritz Mähr' with AI=disabled
+INFO:app:Fetching existing suggestions for entity Moritz Mähr from external API
+INFO:app:Found 5 suggestions for entity Moritz Mähr
+WARNING:app:No URL found in suggestions for entity Moritz Mähr
+INFO:app:Found 2 contexts for entity Moritz Mähr
+INFO:app:Extracted URL from context for entity Moritz Mähr: https://www.dh.unibe.ch/ueber_uns/personen/dr_sc_maehr_moritz/index_ger.html
+INFO:app:Fetching HTML from: https://www.dh.unibe.ch/ueber_uns/personen/dr_sc_maehr_moritz/index_ger.html
+INFO:app:Successfully processed page: Über uns: Dr. sc. Moritz Mähr - Digital Humanities...
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 01:44:20] "POST /api/entities/2/scrape HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 2
+INFO:app:Processing entity 'Moritz Mähr' with AI=disabled
+INFO:app:Fetching existing suggestions for entity Moritz Mähr from external API
+INFO:app:Found 5 suggestions for entity Moritz Mähr
+WARNING:app:No URL found in suggestions for entity Moritz Mähr
+INFO:app:Found 2 contexts for entity Moritz Mähr
+INFO:app:Extracted URL from context for entity Moritz Mähr: https://www.dh.unibe.ch/ueber_uns/personen/dr_sc_maehr_moritz/index_ger.html
+INFO:app:Fetching HTML from: https://www.dh.unibe.ch/ueber_uns/personen/dr_sc_maehr_moritz/index_ger.html
+INFO:app:Successfully processed page: Über uns: Dr. sc. Moritz Mähr - Digital Humanities...
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 01:44:24] "POST /api/entities/2/scrape HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 2
+INFO:app:Processing entity 'Moritz Mähr' with AI=enabled
+INFO:app:Fetching existing suggestions for entity Moritz Mähr from external API
+INFO:app:Found 5 suggestions for entity Moritz Mähr
+WARNING:app:No URL found in suggestions for entity Moritz Mähr
+INFO:app:Found 2 contexts for entity Moritz Mähr
+INFO:app:Extracted URL from context for entity Moritz Mähr: https://www.dh.unibe.ch/ueber_uns/personen/dr_sc_maehr_moritz/index_ger.html
+INFO:app:Fetching HTML from: https://www.dh.unibe.ch/ueber_uns/personen/dr_sc_maehr_moritz/index_ger.html
+INFO:app:Successfully processed page: Über uns: Dr. sc. Moritz Mähr - Digital Humanities...
+INFO:app:AI suggestions requested, generating for each page
+INFO:app:DEBUG: Properties count: 5
+INFO:app:DEBUG: First property: {'id': 1, 'technical_name': 'department', 'name': 'Department', 'type': 'MULTIPLE_CHOICE', 'is_required': False, 'property_options': [{'name': 'Department of Informatics', 'created_at': '2025-10-07T13:56:06.616610', 'id': 1, 'property_id': 1}, {'name': 'Department of Digital Humanities', 'created_at': '2025-10-07T13:56:06.616766', 'id': 2, 'property_id': 1}, {'name': 'Department of Theology', 'created_at': '2025-10-07T13:56:06.616877', 'id': 3, 'property_id': 1}, {'name': 'Department of Computational Linguistics', 'created_at': '2025-10-07T13:56:06.616982', 'id': 4, 'property_id': 1}, {'name': 'Department of Art History', 'created_at': '2025-10-07T13:56:06.617111', 'id': 5, 'property_id': 1}, {'name': 'Department of Greek and Latin Philology', 'created_at': '2025-10-07T13:56:06.617235', 'id': 6, 'property_id': 1}, {'name': 'Department of History', 'created_at': '2025-10-07T13:56:06.617351', 'id': 7, 'property_id': 1}, {'name': 'Department of Computational Linguistics; Linguistic Research Infrastructuree (LiRI)', 'created_at': '2025-10-07T13:56:06.617455', 'id': 8, 'property_id': 1}, {'name': 'Department of Film Studies', 'created_at': '2025-10-07T13:56:06.617560', 'id': 9, 'property_id': 1}]}
+INFO:app:DEBUG: Pages data count: 1
+INFO:app:DEBUG: First page text length: 2809
+INFO:app:Using source_id: 1, edition_id: 2
+INFO:app:Removing 5 existing AI suggestions for source_id=1, edition_id=2
+INFO:app:Remaining suggestions after cleanup: 5
+INFO:app:DEBUG: Processing page: https://www.dh.unibe.ch/ueber_uns/personen/dr_sc_maehr_moritz/index_ger.html
+INFO:app:DEBUG: Page text content length: 2809
+INFO:app:🤖 Starting two-pass AI confidence system
+INFO:app:Listing all sources
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 01:44:30] "GET /api/sources HTTP/1.1" 200 -
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:ai_curation:Reasoner produced 5 suggestions (no confidence)
+INFO:app:🧠 Agent A (Reasoner) generated 5 reasoned suggestions
+INFO:app:DEBUG: Reasoner suggestions: 5
+INFO:ai_curation:Validated 5 suggestions from AI
+INFO:app:DEBUG: Validated (two-pass) suggestions: 5
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:ai_curation:Interpreter produced confidences for 5 properties
+INFO:app:🎯 Agent B (Interpreter) processed 5 confidence interpretations
+INFO:app:📊 Two-pass confidence distribution:
+INFO:app:   • Average: 0.77
+INFO:app:   • Range: 0.55 - 0.90
+INFO:app:   • High confidence (≥80%): 3/5
+INFO:app:   • Low confidence (<50%): 0/5
+INFO:app:🎯 Property 1: final_confidence=0.85 (85%)
+INFO:app:🎯 Property 2: final_confidence=0.85 (85%)
+INFO:app:🎯 Property 3: final_confidence=0.55 (55%)
+INFO:app:🎯 Property 4: final_confidence=0.70 (70%)
+INFO:app:🎯 Property 5: final_confidence=0.90 (90%)
+INFO:app:Generated and stored 5 AI suggestions
+INFO:app:AI Processing: 1 pages, 5 AI suggestions generated
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 01:44:45] "POST /api/entities/2/scrape HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 3
+INFO:app:Processing entity 'Jürgen Bernard' with AI=disabled
+INFO:app:Fetching existing suggestions for entity Jürgen Bernard from external API
+INFO:app:Found 5 suggestions for entity Jürgen Bernard
+WARNING:app:No URL found in suggestions for entity Jürgen Bernard
+INFO:app:Found 2 contexts for entity Jürgen Bernard
+INFO:app:Extracted URL from context for entity Jürgen Bernard: https://www.ifi.uzh.ch/en/ivda/team/bernard.html
+INFO:app:Fetching HTML from: https://www.ifi.uzh.ch/en/ivda/team/bernard.html
+INFO:app:Successfully processed page: Jürgen Bernard, Prof. Dr. | Department of Informat...
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 01:45:28] "POST /api/entities/3/scrape HTTP/1.1" 200 -
+INFO:app:Listing all sources
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 01:45:58] "GET /api/sources HTTP/1.1" 200 -
+INFO:app:Listing all properties
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 01:45:58] "GET /api/properties HTTP/1.1" 200 -
+INFO:app:Listing all sources
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 01:46:47] "GET /api/sources HTTP/1.1" 200 -
+INFO:app:Listing all properties
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 01:46:47] "GET /api/properties HTTP/1.1" 200 -
+INFO:app:Listing all sources
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 01:47:01] "GET /api/sources HTTP/1.1" 200 -
+INFO:app:Listing all properties
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 01:47:01] "GET /api/properties HTTP/1.1" 200 -
+INFO:app:Listing all sources
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 01:47:28] "GET /api/sources HTTP/1.1" 200 -
+INFO:app:Listing all properties
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 01:47:28] "GET /api/properties HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 2
+INFO:app:Processing entity 'Moritz Mähr' with AI=disabled
+INFO:app:Fetching existing suggestions for entity Moritz Mähr from external API
+INFO:app:Found 5 suggestions for entity Moritz Mähr
+WARNING:app:No URL found in suggestions for entity Moritz Mähr
+INFO:app:Found 2 contexts for entity Moritz Mähr
+INFO:app:Extracted URL from context for entity Moritz Mähr: https://www.dh.unibe.ch/ueber_uns/personen/dr_sc_maehr_moritz/index_ger.html
+INFO:app:Fetching HTML from: https://www.dh.unibe.ch/ueber_uns/personen/dr_sc_maehr_moritz/index_ger.html
+INFO:app:Successfully processed page: Über uns: Dr. sc. Moritz Mähr - Digital Humanities...
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 01:50:06] "POST /api/entities/2/scrape HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 3
+INFO:app:Processing entity 'Jürgen Bernard' with AI=disabled
+INFO:app:Fetching existing suggestions for entity Jürgen Bernard from external API
+INFO:app:Found 5 suggestions for entity Jürgen Bernard
+WARNING:app:No URL found in suggestions for entity Jürgen Bernard
+INFO:app:Found 2 contexts for entity Jürgen Bernard
+INFO:app:Extracted URL from context for entity Jürgen Bernard: https://www.ifi.uzh.ch/en/ivda/team/bernard.html
+INFO:app:Fetching HTML from: https://www.ifi.uzh.ch/en/ivda/team/bernard.html
+INFO:app:Successfully processed page: Jürgen Bernard, Prof. Dr. | Department of Informat...
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 01:50:08] "POST /api/entities/3/scrape HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 3
+INFO:app:Processing entity 'Jürgen Bernard' with AI=disabled
+INFO:app:Fetching existing suggestions for entity Jürgen Bernard from external API
+INFO:app:Found 5 suggestions for entity Jürgen Bernard
+WARNING:app:No URL found in suggestions for entity Jürgen Bernard
+INFO:app:Found 2 contexts for entity Jürgen Bernard
+INFO:app:Extracted URL from context for entity Jürgen Bernard: https://www.ifi.uzh.ch/en/ivda/team/bernard.html
+INFO:app:Fetching HTML from: https://www.ifi.uzh.ch/en/ivda/team/bernard.html
+INFO:app:Successfully processed page: Jürgen Bernard, Prof. Dr. | Department of Informat...
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 01:50:13] "POST /api/entities/3/scrape HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 3
+INFO:app:Processing entity 'Jürgen Bernard' with AI=enabled
+INFO:app:Fetching existing suggestions for entity Jürgen Bernard from external API
+INFO:app:Found 5 suggestions for entity Jürgen Bernard
+WARNING:app:No URL found in suggestions for entity Jürgen Bernard
+INFO:app:Found 2 contexts for entity Jürgen Bernard
+INFO:app:Extracted URL from context for entity Jürgen Bernard: https://www.ifi.uzh.ch/en/ivda/team/bernard.html
+INFO:app:Fetching HTML from: https://www.ifi.uzh.ch/en/ivda/team/bernard.html
+INFO:app:Successfully processed page: Jürgen Bernard, Prof. Dr. | Department of Informat...
+INFO:app:AI suggestions requested, generating for each page
+INFO:app:DEBUG: Properties count: 5
+INFO:app:DEBUG: First property: {'id': 1, 'technical_name': 'department', 'name': 'Department', 'type': 'MULTIPLE_CHOICE', 'is_required': False, 'property_options': [{'name': 'Department of Informatics', 'created_at': '2025-10-07T13:56:06.616610', 'id': 1, 'property_id': 1}, {'name': 'Department of Digital Humanities', 'created_at': '2025-10-07T13:56:06.616766', 'id': 2, 'property_id': 1}, {'name': 'Department of Theology', 'created_at': '2025-10-07T13:56:06.616877', 'id': 3, 'property_id': 1}, {'name': 'Department of Computational Linguistics', 'created_at': '2025-10-07T13:56:06.616982', 'id': 4, 'property_id': 1}, {'name': 'Department of Art History', 'created_at': '2025-10-07T13:56:06.617111', 'id': 5, 'property_id': 1}, {'name': 'Department of Greek and Latin Philology', 'created_at': '2025-10-07T13:56:06.617235', 'id': 6, 'property_id': 1}, {'name': 'Department of History', 'created_at': '2025-10-07T13:56:06.617351', 'id': 7, 'property_id': 1}, {'name': 'Department of Computational Linguistics; Linguistic Research Infrastructuree (LiRI)', 'created_at': '2025-10-07T13:56:06.617455', 'id': 8, 'property_id': 1}, {'name': 'Department of Film Studies', 'created_at': '2025-10-07T13:56:06.617560', 'id': 9, 'property_id': 1}]}
+INFO:app:DEBUG: Pages data count: 1
+INFO:app:DEBUG: First page text length: 4088
+INFO:app:Using source_id: 1, edition_id: 3
+INFO:app:DEBUG: Processing page: https://www.ifi.uzh.ch/en/ivda/team/bernard.html
+INFO:app:DEBUG: Page text content length: 4088
+INFO:app:🤖 Starting two-pass AI confidence system
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:ai_curation:Reasoner produced 5 suggestions (no confidence)
+INFO:app:🧠 Agent A (Reasoner) generated 5 reasoned suggestions
+INFO:app:DEBUG: Reasoner suggestions: 5
+INFO:ai_curation:Validated 5 suggestions from AI
+INFO:app:DEBUG: Validated (two-pass) suggestions: 5
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:ai_curation:Interpreter produced confidences for 5 properties
+INFO:app:🎯 Agent B (Interpreter) processed 5 confidence interpretations
+INFO:app:📊 Two-pass confidence distribution:
+INFO:app:   • Average: 0.77
+INFO:app:   • Range: 0.55 - 0.90
+INFO:app:   • High confidence (≥80%): 3/5
+INFO:app:   • Low confidence (<50%): 0/5
+INFO:app:🎯 Property 1: final_confidence=0.85 (85%)
+INFO:app:🎯 Property 2: final_confidence=0.85 (85%)
+INFO:app:🎯 Property 3: final_confidence=0.55 (55%)
+INFO:app:🎯 Property 4: final_confidence=0.70 (70%)
+INFO:app:🎯 Property 5: final_confidence=0.90 (90%)
+INFO:app:Generated and stored 5 AI suggestions
+INFO:app:AI Processing: 1 pages, 5 AI suggestions generated
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 01:50:42] "POST /api/entities/3/scrape HTTP/1.1" 200 -
+INFO:app:Listing all sources
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 02:00:26] "GET /api/sources HTTP/1.1" 200 -
+INFO:app:Listing all properties
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 02:00:26] "GET /api/properties HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 1
+INFO:app:Processing entity 'Michael Blum' with AI=disabled
+INFO:app:Fetching existing suggestions for entity Michael Blum from external API
+INFO:app:Found 5 suggestions for entity Michael Blum
+WARNING:app:No URL found in suggestions for entity Michael Blum
+INFO:app:Found 2 contexts for entity Michael Blum
+INFO:app:Extracted URL from context for entity Michael Blum: https://www.ifi.uzh.ch/en/ivda/team/michael_blum.html
+INFO:app:Fetching HTML from: https://www.ifi.uzh.ch/en/ivda/team/michael_blum.html
+ERROR:app:Error processing URL https://www.ifi.uzh.ch/en/ivda/team/michael_blum.html: 502 Server Error: Proxy Error for url: https://www.ifi.uzh.ch/en/ivda/team/michael_blum.html
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 02:00:31] "POST /api/entities/1/scrape HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 2
+INFO:app:Processing entity 'Moritz Mähr' with AI=disabled
+INFO:app:Fetching existing suggestions for entity Moritz Mähr from external API
+INFO:app:Found 5 suggestions for entity Moritz Mähr
+WARNING:app:No URL found in suggestions for entity Moritz Mähr
+INFO:app:Found 2 contexts for entity Moritz Mähr
+INFO:app:Extracted URL from context for entity Moritz Mähr: https://www.dh.unibe.ch/ueber_uns/personen/dr_sc_maehr_moritz/index_ger.html
+INFO:app:Fetching HTML from: https://www.dh.unibe.ch/ueber_uns/personen/dr_sc_maehr_moritz/index_ger.html
+INFO:app:Successfully processed page: Über uns: Dr. sc. Moritz Mähr - Digital Humanities...
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 02:01:02] "POST /api/entities/2/scrape HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 1
+INFO:app:Processing entity 'Michael Blum' with AI=disabled
+INFO:app:Fetching existing suggestions for entity Michael Blum from external API
+INFO:app:Found 5 suggestions for entity Michael Blum
+WARNING:app:No URL found in suggestions for entity Michael Blum
+INFO:app:Found 2 contexts for entity Michael Blum
+INFO:app:Extracted URL from context for entity Michael Blum: https://www.ifi.uzh.ch/en/ivda/team/michael_blum.html
+INFO:app:Fetching HTML from: https://www.ifi.uzh.ch/en/ivda/team/michael_blum.html
+INFO:app:Successfully processed page: Michael Blum | Department of Informatics  | UZH...
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 02:01:07] "POST /api/entities/1/scrape HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 1
+INFO:app:Processing entity 'Michael Blum' with AI=disabled
+INFO:app:Fetching existing suggestions for entity Michael Blum from external API
+INFO:app:Found 5 suggestions for entity Michael Blum
+WARNING:app:No URL found in suggestions for entity Michael Blum
+INFO:app:Found 2 contexts for entity Michael Blum
+INFO:app:Extracted URL from context for entity Michael Blum: https://www.ifi.uzh.ch/en/ivda/team/michael_blum.html
+INFO:app:Fetching HTML from: https://www.ifi.uzh.ch/en/ivda/team/michael_blum.html
+INFO:app:Successfully processed page: Michael Blum | Department of Informatics  | UZH...
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 02:01:10] "POST /api/entities/1/scrape HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 1
+INFO:app:Processing entity 'Michael Blum' with AI=enabled
+INFO:app:Fetching existing suggestions for entity Michael Blum from external API
+INFO:app:Found 5 suggestions for entity Michael Blum
+WARNING:app:No URL found in suggestions for entity Michael Blum
+INFO:app:Found 2 contexts for entity Michael Blum
+INFO:app:Extracted URL from context for entity Michael Blum: https://www.ifi.uzh.ch/en/ivda/team/michael_blum.html
+INFO:app:Fetching HTML from: https://www.ifi.uzh.ch/en/ivda/team/michael_blum.html
+INFO:app:Successfully processed page: Michael Blum | Department of Informatics  | UZH...
+INFO:app:AI suggestions requested, generating for each page
+INFO:app:DEBUG: Properties count: 5
+INFO:app:DEBUG: First property: {'id': 1, 'technical_name': 'department', 'name': 'Department', 'type': 'MULTIPLE_CHOICE', 'is_required': False, 'property_options': [{'name': 'Department of Informatics', 'created_at': '2025-10-07T13:56:06.616610', 'id': 1, 'property_id': 1}, {'name': 'Department of Digital Humanities', 'created_at': '2025-10-07T13:56:06.616766', 'id': 2, 'property_id': 1}, {'name': 'Department of Theology', 'created_at': '2025-10-07T13:56:06.616877', 'id': 3, 'property_id': 1}, {'name': 'Department of Computational Linguistics', 'created_at': '2025-10-07T13:56:06.616982', 'id': 4, 'property_id': 1}, {'name': 'Department of Art History', 'created_at': '2025-10-07T13:56:06.617111', 'id': 5, 'property_id': 1}, {'name': 'Department of Greek and Latin Philology', 'created_at': '2025-10-07T13:56:06.617235', 'id': 6, 'property_id': 1}, {'name': 'Department of History', 'created_at': '2025-10-07T13:56:06.617351', 'id': 7, 'property_id': 1}, {'name': 'Department of Computational Linguistics; Linguistic Research Infrastructuree (LiRI)', 'created_at': '2025-10-07T13:56:06.617455', 'id': 8, 'property_id': 1}, {'name': 'Department of Film Studies', 'created_at': '2025-10-07T13:56:06.617560', 'id': 9, 'property_id': 1}]}
+INFO:app:DEBUG: Pages data count: 1
+INFO:app:DEBUG: First page text length: 2580
+INFO:app:Using source_id: 1, edition_id: 1
+INFO:app:Removing 5 existing AI suggestions for source_id=1, edition_id=1
+INFO:app:Remaining suggestions after cleanup: 10
+INFO:app:DEBUG: Processing page: https://www.ifi.uzh.ch/en/ivda/team/michael_blum.html
+INFO:app:DEBUG: Page text content length: 2580
+INFO:app:🤖 Starting two-pass AI confidence system
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:ai_curation:Reasoner produced 5 suggestions (no confidence)
+INFO:app:🧠 Agent A (Reasoner) generated 5 reasoned suggestions
+INFO:app:DEBUG: Reasoner suggestions: 5
+INFO:ai_curation:Validated 5 suggestions from AI
+INFO:app:DEBUG: Validated (two-pass) suggestions: 5
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:ai_curation:Interpreter produced confidences for 5 properties
+INFO:app:🎯 Agent B (Interpreter) processed 5 confidence interpretations
+INFO:app:📊 Two-pass confidence distribution:
+INFO:app:   • Average: 0.75
+INFO:app:   • Range: 0.55 - 0.85
+INFO:app:   • High confidence (≥80%): 3/5
+INFO:app:   • Low confidence (<50%): 0/5
+INFO:app:🎯 Property 1: final_confidence=0.85 (85%)
+INFO:app:🎯 Property 2: final_confidence=0.85 (85%)
+INFO:app:🎯 Property 3: final_confidence=0.55 (55%)
+INFO:app:🎯 Property 4: final_confidence=0.80 (80%)
+INFO:app:🎯 Property 5: final_confidence=0.70 (70%)
+INFO:app:Generated and stored 5 AI suggestions
+INFO:app:AI Processing: 1 pages, 5 AI suggestions generated
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 02:01:42] "POST /api/entities/1/scrape HTTP/1.1" 200 -
+INFO:app:Updated existing suggestion 13 with evidence
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 13:59:53] "POST /api/manual-metadata HTTP/1.1" 200 -
+INFO:app:Listing all sources
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 14:00:48] "GET /api/sources HTTP/1.1" 200 -
+INFO:app:Listing all properties
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 14:00:48] "GET /api/properties HTTP/1.1" 200 -

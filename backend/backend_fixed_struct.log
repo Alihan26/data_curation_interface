@@ -1,0 +1,126 @@
+INFO:app:Metadata Curation API Client initialized with base URL: http://localhost:8000
+INFO:ai_curation:AI Curation Service initialized with model: gpt-4o-mini
+INFO:httpx:HTTP Request: GET https://api.openai.com/v1/models "HTTP/1.1 200 OK"
+INFO:app:AI Curation Service initialized successfully
+INFO:app:Fetching data from Metadata Curation API...
+INFO:app:API data loaded - Sources: 1, Properties: 5, Editions: 17
+INFO:app:DEBUG: Data initialized - Sources: 1, Properties: 5, Editions: 17
+🚀 Starting Curation Preview API & Metadata-Curation mock…
+ * Serving Flask app 'app'
+ * Debug mode: off
+INFO:werkzeug:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8001
+ * Running on http://192.168.1.239:8001
+INFO:werkzeug:[33mPress CTRL+C to quit[0m
+INFO:app:Scraping content for entity 2
+INFO:app:Processing entity 'Moritz Mähr' with AI=disabled
+INFO:app:Fetching existing suggestions for entity Moritz Mähr from external API
+INFO:app:Found 5 suggestions for entity Moritz Mähr
+WARNING:app:No URL found in suggestions for entity Moritz Mähr
+INFO:app:Found 2 contexts for entity Moritz Mähr
+INFO:app:Extracted URL from context for entity Moritz Mähr: https://www.dh.unibe.ch/ueber_uns/personen/dr_sc_maehr_moritz/index_ger.html
+INFO:app:Fetching HTML from: https://www.dh.unibe.ch/ueber_uns/personen/dr_sc_maehr_moritz/index_ger.html
+INFO:app:Successfully processed page: Über uns: Dr. sc. Moritz Mähr - Digital Humanities...
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 01:03:01] "POST /api/entities/2/scrape HTTP/1.1" 200 -
+INFO:app:Listing all sources
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 01:03:22] "GET /api/sources HTTP/1.1" 200 -
+INFO:app:Listing all properties
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 01:03:22] "GET /api/properties HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 4
+INFO:app:Processing entity 'Tobias Jammerthal' with AI=disabled
+INFO:app:Fetching existing suggestions for entity Tobias Jammerthal from external API
+INFO:app:Found 5 suggestions for entity Tobias Jammerthal
+WARNING:app:No URL found in suggestions for entity Tobias Jammerthal
+INFO:app:Found 2 contexts for entity Tobias Jammerthal
+INFO:app:Extracted URL from context for entity Tobias Jammerthal: https://www.theologie.uzh.ch/de/faecher/kirchengeschichte/kg-dogmengeschichte/team/jammerthal.html
+INFO:app:Fetching HTML from: https://www.theologie.uzh.ch/de/faecher/kirchengeschichte/kg-dogmengeschichte/team/jammerthal.html
+INFO:app:Successfully processed page: Tobias Jammerthal | Theologisches Seminar | UZH...
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 01:03:26] "POST /api/entities/4/scrape HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 2
+INFO:app:Processing entity 'Moritz Mähr' with AI=disabled
+INFO:app:Fetching existing suggestions for entity Moritz Mähr from external API
+INFO:app:Found 5 suggestions for entity Moritz Mähr
+WARNING:app:No URL found in suggestions for entity Moritz Mähr
+INFO:app:Found 2 contexts for entity Moritz Mähr
+INFO:app:Extracted URL from context for entity Moritz Mähr: https://www.dh.unibe.ch/ueber_uns/personen/dr_sc_maehr_moritz/index_ger.html
+INFO:app:Fetching HTML from: https://www.dh.unibe.ch/ueber_uns/personen/dr_sc_maehr_moritz/index_ger.html
+INFO:app:Successfully processed page: Über uns: Dr. sc. Moritz Mähr - Digital Humanities...
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 01:03:36] "POST /api/entities/2/scrape HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 1
+INFO:app:Processing entity 'Michael Blum' with AI=disabled
+INFO:app:Fetching existing suggestions for entity Michael Blum from external API
+INFO:app:Found 5 suggestions for entity Michael Blum
+WARNING:app:No URL found in suggestions for entity Michael Blum
+INFO:app:Found 2 contexts for entity Michael Blum
+INFO:app:Extracted URL from context for entity Michael Blum: https://www.ifi.uzh.ch/en/ivda/team/michael_blum.html
+INFO:app:Fetching HTML from: https://www.ifi.uzh.ch/en/ivda/team/michael_blum.html
+INFO:app:Successfully processed page: Michael Blum | Department of Informatics  | UZH...
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 01:03:57] "POST /api/entities/1/scrape HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 3
+INFO:app:Processing entity 'Jürgen Bernard' with AI=disabled
+INFO:app:Fetching existing suggestions for entity Jürgen Bernard from external API
+INFO:app:Found 5 suggestions for entity Jürgen Bernard
+WARNING:app:No URL found in suggestions for entity Jürgen Bernard
+INFO:app:Found 2 contexts for entity Jürgen Bernard
+INFO:app:Extracted URL from context for entity Jürgen Bernard: https://www.ifi.uzh.ch/en/ivda/team/bernard.html
+INFO:app:Fetching HTML from: https://www.ifi.uzh.ch/en/ivda/team/bernard.html
+INFO:app:Successfully processed page: Jürgen Bernard, Prof. Dr. | Department of Informat...
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 01:04:18] "POST /api/entities/3/scrape HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 2
+INFO:app:Processing entity 'Moritz Mähr' with AI=disabled
+INFO:app:Fetching existing suggestions for entity Moritz Mähr from external API
+INFO:app:Found 5 suggestions for entity Moritz Mähr
+WARNING:app:No URL found in suggestions for entity Moritz Mähr
+INFO:app:Found 2 contexts for entity Moritz Mähr
+INFO:app:Extracted URL from context for entity Moritz Mähr: https://www.dh.unibe.ch/ueber_uns/personen/dr_sc_maehr_moritz/index_ger.html
+INFO:app:Fetching HTML from: https://www.dh.unibe.ch/ueber_uns/personen/dr_sc_maehr_moritz/index_ger.html
+INFO:app:Successfully processed page: Über uns: Dr. sc. Moritz Mähr - Digital Humanities...
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 01:06:25] "POST /api/entities/2/scrape HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 7
+INFO:app:Processing entity 'Teodora Vuković' with AI=disabled
+INFO:app:Fetching existing suggestions for entity Teodora Vuković from external API
+INFO:app:Found 5 suggestions for entity Teodora Vuković
+WARNING:app:No URL found in suggestions for entity Teodora Vuković
+INFO:app:Found 2 contexts for entity Teodora Vuković
+INFO:app:Extracted URL from context for entity Teodora Vuković: https://www.liri.uzh.ch/en/aboutus/Teodora-Vukovi%C4%87.html
+INFO:app:Fetching HTML from: https://www.liri.uzh.ch/en/aboutus/Teodora-Vukovi%C4%87.html
+INFO:app:Successfully processed page: Teodora Vuković | LiRI – Linguistic Research Infra...
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 01:06:49] "POST /api/entities/7/scrape HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 2
+INFO:app:Processing entity 'Moritz Mähr' with AI=disabled
+INFO:app:Fetching existing suggestions for entity Moritz Mähr from external API
+INFO:app:Found 5 suggestions for entity Moritz Mähr
+WARNING:app:No URL found in suggestions for entity Moritz Mähr
+INFO:app:Found 2 contexts for entity Moritz Mähr
+INFO:app:Extracted URL from context for entity Moritz Mähr: https://www.dh.unibe.ch/ueber_uns/personen/dr_sc_maehr_moritz/index_ger.html
+INFO:app:Fetching HTML from: https://www.dh.unibe.ch/ueber_uns/personen/dr_sc_maehr_moritz/index_ger.html
+INFO:app:Successfully processed page: Über uns: Dr. sc. Moritz Mähr - Digital Humanities...
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 01:07:04] "POST /api/entities/2/scrape HTTP/1.1" 200 -
+INFO:app:Listing all sources
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 01:08:47] "GET /api/sources HTTP/1.1" 200 -
+INFO:app:Listing all properties
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 01:08:47] "GET /api/properties HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 2
+INFO:app:Processing entity 'Moritz Mähr' with AI=disabled
+INFO:app:Fetching existing suggestions for entity Moritz Mähr from external API
+INFO:app:Found 5 suggestions for entity Moritz Mähr
+WARNING:app:No URL found in suggestions for entity Moritz Mähr
+INFO:app:Found 2 contexts for entity Moritz Mähr
+INFO:app:Extracted URL from context for entity Moritz Mähr: https://www.dh.unibe.ch/ueber_uns/personen/dr_sc_maehr_moritz/index_ger.html
+INFO:app:Fetching HTML from: https://www.dh.unibe.ch/ueber_uns/personen/dr_sc_maehr_moritz/index_ger.html
+INFO:app:Successfully processed page: Über uns: Dr. sc. Moritz Mähr - Digital Humanities...
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 01:08:51] "POST /api/entities/2/scrape HTTP/1.1" 200 -
+INFO:app:Listing all sources
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 01:10:46] "GET /api/sources HTTP/1.1" 200 -
+INFO:app:Listing all properties
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 01:10:46] "GET /api/properties HTTP/1.1" 200 -

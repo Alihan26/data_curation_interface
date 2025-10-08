@@ -140,14 +140,20 @@ class AICurationService:
                     {
                         "role": "system",
                         "content": (
-                            "You are an expert metadata reasoner. Your reasoning will be analyzed by a separate confidence system. "
-                            "Use definitive language when certain, hedging language when uncertain. "
-                            "Provide direct evidence quotes and detailed reasoning. Return ONLY valid JSON."
+                            "You are an expert metadata reasoner. Your reasoning will be analyzed by a strict confidence system. "
+                            "BE HONEST about uncertainty - use appropriate hedging language when you're not 100% certain. "
+                            "ALWAYS mention alternative interpretations you considered and why you rejected them. "
+                            "Provide EXACT verbatim quotes as evidence whenever possible. "
+                            "Use CLEAR language signals: "
+                            "- CERTAIN: 'explicitly states', 'clearly shows', 'directly mentions' "
+                            "- LIKELY: 'indicates', 'suggests', 'appears to be' "
+                            "- UNCERTAIN: 'might', 'possibly', 'could be', 'seems to imply' "
+                            "Return ONLY valid JSON with detailed, honest reasoning."
                         ),
                     },
                     {"role": "user", "content": prompt},
                 ],
-                temperature=self.temperature,
+                temperature=0.4,  # Slightly higher for more nuanced reasoning
                 max_tokens=self.max_tokens,
                 response_format={"type": "json_object"},
             )
@@ -192,14 +198,18 @@ class AICurationService:
                     {
                         "role": "system",
                         "content": (
-                            "You are a systematic confidence scorer. Follow the provided algorithm exactly. "
-                            "Analyze linguistic patterns, evidence quality, and reasoning structure. "
-                            "Apply each scoring step methodically. Return ONLY JSON."
+                            "You are a CONSERVATIVE confidence scorer for metadata curation. "
+                            "Your job is to prevent overconfidence - be STRICT and CRITICAL. "
+                            "Follow the algorithm exactly, applying ALL penalties. "
+                            "High confidence (>0.80) should be RARE - reserve for explicit, unambiguous statements only. "
+                            "Most scores should fall in 0.30-0.70 range. "
+                            "Look for hedging language, ambiguity, missing evidence, and alternative interpretations. "
+                            "When in doubt, score lower. Return ONLY valid JSON with calculations shown in rationale."
                         ),
                     },
                     {"role": "user", "content": prompt},
                 ],
-                temperature=0.3,
+                temperature=0.2,  # Lower temperature for more consistent, conservative scoring
                 max_tokens=min(self.max_tokens, 1200),
                 response_format={"type": "json_object"},
             )
@@ -410,46 +420,85 @@ RETURN FORMAT (JSON):
 
         context_url = url or ""
 
-        prompt = f"""You are a confidence scorer. Use this systematic algorithm to rate each suggestion [0.0-1.0]:
+        prompt = f"""You are a STRICT confidence scorer. Rate each suggestion [0.0-1.0] using this CONSERVATIVE algorithm:
 
-CONFIDENCE ALGORITHM:
-1. START: Base confidence = 0.5
-2. EVIDENCE ANALYSIS:
-   - Direct quote with location: +0.2
-   - Vague/indirect reference: +0.1
-   - No specific evidence: +0.0
-3. REASONING ANALYSIS:
-   - Definitive language ("clearly states", "explicitly mentions", "definitively shows"): +0.2
-   - Moderate certainty ("indicates", "suggests", "shows"): +0.1
-   - Hedging language ("might", "possibly", "seems", "could be"): -0.2
-   - Uncertainty words ("uncertain", "unclear", "ambiguous"): -0.3
-   - Mentions alternatives considered: +0.1
-   - Detailed reasoning (>50 words): +0.1
-4. PROPERTY ALIGNMENT:
-   - Perfect match to property constraints: +0.1
-   - Partial/unclear match: +0.0
-   - Potential mismatch: -0.2
-5. UNCERTAINTY INDICATORS:
-   - Words like "uncertain", "unclear": -0.3
-   - Missing key information: -0.2
+CONFIDENCE CALIBRATION GUIDE:
+• 0.90-1.00 = CERTAIN: Explicit statement with exact quote, zero ambiguity
+• 0.70-0.89 = HIGH: Strong evidence, definitive reasoning, minimal alternatives
+• 0.50-0.69 = MODERATE: Good evidence but some interpretation needed
+• 0.30-0.49 = LOW: Weak evidence, significant uncertainty, multiple alternatives
+• 0.00-0.29 = VERY LOW: Speculation, minimal evidence, highly uncertain
 
-FINAL = Base + Evidence + Reasoning + Alignment - Uncertainty
+SCORING ALGORITHM:
+1. START: Base = 0.40 (conservative baseline)
+
+2. EVIDENCE QUALITY (+/-):
+   - Exact verbatim quote from source: +0.30
+   - Paraphrased but specific reference: +0.15
+   - Vague/general reference: +0.05
+   - No concrete evidence: -0.20
+   - Evidence contradicts value: -0.50
+
+3. REASONING STRENGTH (+/-):
+   - Uses "clearly states", "explicitly shows": +0.20
+   - Uses "indicates", "suggests": +0.10
+   - Uses "might", "possibly", "seems": -0.15
+   - Uses "uncertain", "unclear", "ambiguous": -0.25
+   - Mentions multiple viable alternatives: -0.15
+   - No alternatives discussed: -0.10
+   - Detailed step-by-step logic: +0.10
+
+4. PROPERTY MATCH (+/-):
+   - Perfect match (e.g., exact option in list): +0.15
+   - Close match, minor interpretation: +0.05
+   - Requires assumption/inference: -0.10
+   - Questionable fit: -0.20
+
+5. METADATA TYPE PENALTIES:
+   - FREE_TEXT without direct quote: -0.10
+   - CHOICE not explicitly stated: -0.15
+   - NUMERICAL without exact number: -0.20
+
+BE CONSERVATIVE: High confidence (>0.80) should be RARE and only for explicit, unambiguous cases.
+FINAL = Base + Evidence + Reasoning + Match + Type penalties
 CLAMP to [0.0, 1.0]
 
 PROPERTIES:
 {chr(10).join(prop_lines)}
 
+CALIBRATION EXAMPLES:
+
+Example 1 - CONFIDENCE 0.95 (VERY HIGH):
+• Evidence: "The page states: 'Dr. Schmidt is Professor of History at ETH Zurich'"
+• Reasoning: "The content explicitly mentions the department name in the page header. No ambiguity."
+• Score: 0.40 + 0.30(exact quote) + 0.20(definitive) + 0.15(perfect match) = 1.05 → clamped to 0.95
+
+Example 2 - CONFIDENCE 0.65 (MODERATE):
+• Evidence: "The researcher focuses on machine learning applications"
+• Reasoning: "The content indicates research in ML. Could also fit Computer Science or AI departments."
+• Score: 0.40 + 0.15(paraphrased) + 0.10(indicates) - 0.15(alternatives) + 0.05(close match) = 0.55
+
+Example 3 - CONFIDENCE 0.35 (LOW):
+• Evidence: "Works with data visualization tools"
+• Reasoning: "The page might suggest Informatics, but could also be Computer Science or Statistics."
+• Score: 0.40 + 0.05(vague) - 0.15(might) - 0.15(alternatives) - 0.10(assumption) = 0.05
+
+Example 4 - CONFIDENCE 0.20 (VERY LOW):
+• Evidence: "No clear department mentioned"
+• Reasoning: "The field seems unclear from the content. Multiple departments are possible."
+• Score: 0.40 - 0.20(no evidence) - 0.25(uncertain) - 0.15(hedging) = -0.20 → clamped to 0.20
+
 ITEMS TO SCORE:
 {chr(10).join(items_lines)}
 
-Apply the algorithm to each item. Return concise JSON:
+Apply the algorithm STRICTLY to each item. Be CONSERVATIVE - most scores should be 0.30-0.70 range. Return JSON:
 {{
   "confidences": [
     {{
       "property_id": <id>,
       "confidence": <score>,
-      "rationale": "<score formula>",
-      "tags": {{"evidence": "direct|indirect|none", "reasoning": "definitive|hedged|uncertain"}}
+      "rationale": "<show calculation: base + evidence + reasoning + match + penalties>",
+      "tags": {{"evidence": "direct|indirect|none", "reasoning": "definitive|moderate|hedged|uncertain"}}
     }}
   ]
 }}"""
