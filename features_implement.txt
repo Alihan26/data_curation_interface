@@ -18,6 +18,7 @@ because the evidence is literally being highlighted in the text field.
 7.) AI Agent 2 finetuning, + it's so slow!!
 8.) Saving your results
 9.) Logs for the Use Case
+10.) Go over midterm notes
 
 Use Case playbook
 

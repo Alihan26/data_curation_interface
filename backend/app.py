@@ -1339,7 +1339,7 @@ def create_manual_metadata():
         existing_suggestion.update({
             "property_option_id": property_option_id,
             "custom_value": custom_value,
-            "status": "edited",
+            "status": "accepted",  # Manual updates are pre-accepted
             "ai_generated": False,
             "curated_at": None,
             "curator_note": payload.get("note", "Manually edited by curator"),
@@ -1372,11 +1372,11 @@ def create_manual_metadata():
             "property_id": payload["property_id"],
             "property_option_id": property_option_id,
             "custom_value": custom_value,
-            "status": "pending",
+            "status": "accepted",  # Manual entries are pre-accepted by curator
             "ai_generated": False,
             "confidence": 1.0,  # Manual entries have full confidence
             "evidence": evidence_record,
-            "reasoning": payload.get("reasoning", "Curator knowledge"),
+            "reasoning": payload.get("reasoning", "Manually entered by curator"),
             "curator_note": payload.get("note", ""),
             "is_required": is_required,
             "created_at": dt.datetime.now(timezone.utc).isoformat()

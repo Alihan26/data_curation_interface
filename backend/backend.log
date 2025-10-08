@@ -3,10 +3,55 @@ INFO:ai_curation:AI Curation Service initialized with model: gpt-4o-mini
 INFO:httpx:HTTP Request: GET https://api.openai.com/v1/models "HTTP/1.1 200 OK"
 INFO:app:AI Curation Service initialized successfully
 INFO:app:Fetching data from Metadata Curation API...
-INFO:app:API data loaded - Sources: 3, Properties: 48, Editions: 355
-INFO:app:DEBUG: Data initialized - Sources: 3, Properties: 48, Editions: 355
+INFO:app:API data loaded - Sources: 1, Properties: 5, Editions: 17
+INFO:app:DEBUG: Data initialized - Sources: 1, Properties: 5, Editions: 17
 🚀 Starting Curation Preview API & Metadata-Curation mock…
  * Serving Flask app 'app'
  * Debug mode: off
-Address already in use
-Port 8001 is in use by another program. Either identify and stop that program, or start the server with a different port.
+INFO:werkzeug:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8001
+ * Running on http://172.20.10.6:8001
+INFO:werkzeug:[33mPress CTRL+C to quit[0m
+INFO:app:Listing all sources
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 15:26:04] "GET /api/sources HTTP/1.1" 200 -
+INFO:app:Listing all sources
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 15:26:08] "GET /api/sources HTTP/1.1" 200 -
+INFO:app:Listing all properties
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 15:26:08] "GET /api/properties HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 1
+INFO:app:Processing entity 'Michael Blum' with AI=disabled
+INFO:app:Fetching existing suggestions for entity Michael Blum from external API
+INFO:app:Found 5 suggestions for entity Michael Blum
+WARNING:app:No URL found in suggestions for entity Michael Blum
+INFO:app:Found 2 contexts for entity Michael Blum
+INFO:app:Extracted URL from context for entity Michael Blum: https://www.ifi.uzh.ch/en/ivda/team/michael_blum.html
+INFO:app:Fetching HTML from: https://www.ifi.uzh.ch/en/ivda/team/michael_blum.html
+INFO:app:Successfully processed page: Michael Blum | Department of Informatics  | UZH...
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 15:26:11] "POST /api/entities/1/scrape HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 15:26:11] "GET /api/suggestions?edition_id=1&source_id=1 HTTP/1.1" 200 -
+INFO:app:Created new manual suggestion: 1 with evidence
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 15:26:21] "[35m[1mPOST /api/manual-metadata HTTP/1.1[0m" 201 -
+INFO:app:Created new manual suggestion: 2 with evidence
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 15:26:29] "[35m[1mPOST /api/manual-metadata HTTP/1.1[0m" 201 -
+INFO:app:Listing all sources
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 15:27:41] "GET /api/sources HTTP/1.1" 200 -
+INFO:app:Listing all properties
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 15:27:41] "GET /api/properties HTTP/1.1" 200 -
+INFO:app:Listing all sources
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 15:28:59] "GET /api/sources HTTP/1.1" 200 -
+INFO:app:Listing all properties
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 15:28:59] "GET /api/properties HTTP/1.1" 200 -
+INFO:app:Listing all sources
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 15:29:19] "GET /api/sources HTTP/1.1" 200 -
+INFO:app:Listing all properties
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 15:29:19] "GET /api/properties HTTP/1.1" 200 -
+INFO:app:Listing all sources
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 15:29:34] "GET /api/sources HTTP/1.1" 200 -
+INFO:app:Listing all properties
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 15:29:34] "GET /api/properties HTTP/1.1" 200 -
+INFO:app:Listing all sources
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 15:30:58] "GET /api/sources HTTP/1.1" 200 -
+INFO:app:Listing all properties
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 15:30:58] "GET /api/properties HTTP/1.1" 200 -

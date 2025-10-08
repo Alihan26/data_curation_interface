@@ -79,6 +79,11 @@
               {{ edition.entity_name || edition.source_internal_id || `Entity ${edition.id}` }}
             </option>
           </select>
+          
+          <!-- Show progress for selected entity below dropdown -->
+          <div v-if="selectedEntityId && aiSuggestions.length > 0 && !curationStarted" class="entity-progress-info">
+            {{ getEntityProgressText() }}
+          </div>
         </div>
         
         <!-- Column 2: AI Toggle -->
@@ -120,7 +125,7 @@
             class="start-btn"
             :class="{ 'ai-mode': useAI, 'manual-mode': !useAI }"
           >
-            {{ curationStarted ? 'Active' : 'Start' }}
+            {{ curationStarted ? 'Active' : (aiSuggestions.length > 0 ? 'Resume' : 'Start') }}
           </button>
           <div v-else class="start-placeholder">Select entity</div>
           </div>
@@ -296,7 +301,8 @@
                 </div>
                 <div class="field-header-right">
                   <span class="field-type-label">{{ field.type.replace('_', ' ').toLowerCase() }}</span>
-                  <span v-if="field.showAISuggestion && field.aiSuggestion.confidence" class="ai-confidence-badge">
+                  <!-- Only show AI confidence badge for AI-generated suggestions -->
+                  <span v-if="field.showAISuggestion && field.aiSuggestion && field.aiSuggestion.ai_generated !== false && field.aiSuggestion.confidence" class="ai-confidence-badge">
                     🤖 {{ Math.round(field.aiSuggestion.confidence * 100) }}%
                   </span>
                   <span v-if="!curationStarted" class="preview-label">PREVIEW</span>
@@ -313,15 +319,29 @@
                     </div>
                   </div>
 
-              <!-- AI Suggestion Section (when curation started, AI enabled, and suggestion exists) -->
-              <div v-else-if="curationStarted && field.showAISuggestion" class="ai-suggestion-section">
+              <!-- Manual Entry Saved (simple display, NO AI elements) -->
+              <div v-else-if="curationStarted && field.showAISuggestion && field.aiSuggestion.ai_generated === false" class="manual-saved-section">
+                <div class="suggestion-value-container">
+                  <div class="suggestion-label">Manual Entry:</div>
+                  <div class="suggested-value-display manual-value">{{ renderSuggestionValue(field.aiSuggestion) }}</div>
+                </div>
+                
+                <div class="suggestion-actions">
+                  <div class="status-display status-manual">
+                    ✓ SAVED
+                  </div>
+                </div>
+              </div>
+              
+              <!-- AI Suggestion Section (ONLY for AI-generated suggestions) -->
+              <div v-else-if="curationStarted && field.showAISuggestion && field.aiSuggestion.ai_generated !== false" class="ai-suggestion-section">
                 <!-- AI Suggested Value -->
                 <div class="suggestion-value-container">
-                  <div class="suggestion-label">Suggested:</div>
+                  <div class="suggestion-label">AI Suggested:</div>
                   <div class="suggested-value-display">{{ renderSuggestionValue(field.aiSuggestion) }}</div>
                 </div>
 
-                <!-- AI Reasoning (simple, no box) -->
+                <!-- AI Reasoning (ONLY for AI suggestions) -->
                 <div v-if="field.aiSuggestion.reasoning" class="ai-reasoning">
                   <div class="reasoning-label">AI Reasoning:</div>
                   <div class="reasoning-text">
@@ -336,36 +356,40 @@
                   </div>
                 </div>
 
-                <!-- AI Suggestion Actions (redesigned) -->
+                <!-- AI Actions: Accept/Reject/Edit or Status Badge -->
                 <div class="suggestion-actions">
-                  <button 
-                    v-if="field.aiSuggestion.status === 'pending'"
-                    @click.stop="acceptSuggestion(field.aiSuggestion)"
-                    class="action-btn accept-btn" 
-                  >
-                    <span class="btn-icon">✓</span>
-                    <span class="btn-text">Accept</span>
-                  </button>
-                  <button 
-                    v-if="field.aiSuggestion.status === 'pending'"
-                    @click.stop="rejectSuggestion(field.aiSuggestion)"
-                    class="action-btn reject-btn" 
-                  >
-                    <span class="btn-icon">✕</span>
-                    <span class="btn-text">Reject</span>
-                  </button>
-                  <button
-                    v-if="field.aiSuggestion.status === 'pending'"
-                    @click.stop="editSuggestion(field.aiSuggestion)"
-                    class="action-btn edit-btn" 
-                  >
-                    <span class="btn-icon">✎</span>
-                    <span class="btn-text">Edit</span>
-                  </button>
-                  <div v-else class="status-display" :class="getStatusClass(field.aiSuggestion)">
-                    {{ field.aiSuggestion.status.toUpperCase() }}
+                  <!-- Pending AI Suggestion: Show action buttons -->
+                  <template v-if="field.aiSuggestion.status === 'pending'">
+                    <button 
+                      @click.stop="acceptSuggestion(field.aiSuggestion)"
+                      class="action-btn accept-btn" 
+                    >
+                      <span class="btn-icon">✓</span>
+                      <span class="btn-text">Accept</span>
+                    </button>
+                    <button 
+                      @click.stop="rejectSuggestion(field.aiSuggestion)"
+                      class="action-btn reject-btn" 
+                    >
+                      <span class="btn-icon">✕</span>
+                      <span class="btn-text">Reject</span>
+                    </button>
+                    <button
+                      @click.stop="editSuggestion(field.aiSuggestion)"
+                      class="action-btn edit-btn" 
+                    >
+                      <span class="btn-icon">✎</span>
+                      <span class="btn-text">Edit</span>
+                    </button>
+                  </template>
+                  
+                  <!-- Curated AI Suggestion: Show status badge -->
+                  <template v-else>
+                    <div class="status-display" :class="getStatusClass(field.aiSuggestion)">
+                      {{ field.aiSuggestion.status === 'accepted' ? '✓ ACCEPTED' : field.aiSuggestion.status.toUpperCase() }}
+                    </div>
+                  </template>
               </div>
-            </div>
           </div>
           
               <!-- Manual Entry Section (only when curation started and field needs manual entry) -->
@@ -581,27 +605,45 @@ export default {
       if (!this.properties.length) return []
       
       const fields = this.properties.map(property => {
-        // Find AI suggestion for this property
-        const aiSuggestion = this.aiSuggestions.find(s => s.property_id === property.id)
+        // Find suggestion for this property (could be AI-generated or manual)
+        const suggestion = this.aiSuggestions.find(s => s.property_id === property.id)
         
         // Determine if this field should show AI suggestion or manual entry
         let showAISuggestion = false
-        let needsManualEntry = true
+        let needsManualEntry = false
         
-        if (this.curationStarted && this.useAI && aiSuggestion) {
-          const confidence = (aiSuggestion.confidence || 0) * 100
-          showAISuggestion = confidence >= this.confidenceThreshold
-          needsManualEntry = !showAISuggestion
-        } else if (this.curationStarted && !this.useAI) {
-          needsManualEntry = true
-        } else {
-          // Before curation starts, don't show interactive fields
+        if (!this.curationStarted) {
+          // BEFORE Start is clicked: show nothing interactive
+          showAISuggestion = false
           needsManualEntry = false
+        } else if (suggestion) {
+          // AFTER Start is clicked AND has saved/generated suggestion
+          
+          // Manual entries (ai_generated=false) are always accepted and finalized
+          if (suggestion.ai_generated === false) {
+            showAISuggestion = true
+            needsManualEntry = false
+          } 
+          // AI suggestions with pending status: show if confidence high enough
+          else if (suggestion.status === 'pending') {
+            const confidence = (suggestion.confidence || 0) * 100
+            showAISuggestion = confidence >= this.confidenceThreshold
+            needsManualEntry = !showAISuggestion
+          } 
+          // AI suggestions that have been curated: show with status
+          else {
+            showAISuggestion = true
+            needsManualEntry = false
+          }
+        } else {
+          // AFTER Start, no suggestion exists: show manual entry
+          needsManualEntry = true
+          showAISuggestion = false
         }
         
         return {
           ...property,
-          aiSuggestion: showAISuggestion ? aiSuggestion : null,
+          aiSuggestion: showAISuggestion ? suggestion : null,
           manualValue: this.manualValues[property.id] || '',
           showAISuggestion,
           needsManualEntry,
@@ -777,11 +819,64 @@ export default {
       console.log('Selected entity:', this.selectedEntity.entity_name)
       console.log('Selected source:', this.selectedSource.name)
       
-      // Reset curation state when entity changes
+      // Reset curation state when entity changes (user must click Start)
       this.curationStarted = false
+      this.aiSuggestions = []
+      this.manualValues = {}
       
       // Start scraping immediately (but don't start curation yet)
       await this.scrapeContent()
+      
+      // Load any previously saved suggestions for this entity
+      await this.loadSavedSuggestions()
+    },
+    
+    async loadSavedSuggestions() {
+      if (!this.selectedEntityId) return
+      
+      try {
+        // Fetch any existing suggestions for this entity from the backend
+        const response = await axios.get('/api/suggestions', {
+          params: {
+            edition_id: this.selectedEntityId,
+            source_id: this.selectedSource?.id
+          }
+        })
+        
+        if (response.data && response.data.length > 0) {
+          // Load saved suggestions BUT don't auto-start curation
+          this.aiSuggestions = response.data
+          
+          // Calculate completion stats (SAME logic as updateCurationProgress)
+          const completed = response.data.filter(s => 
+            s.ai_generated === false ||  // Manual entries count as complete
+            s.status === 'accepted' || 
+            s.status === 'rejected' || 
+            s.status === 'edited'
+          ).length
+          const total = this.properties.length
+          
+          // Update status to show work has been done
+          if (completed === total) {
+            this.statusText = `✓ All ${total} fields complete - Click Resume to view`
+            this.statusClass = 'status-complete'
+          } else if (completed > 0) {
+            this.statusText = `${completed}/${total} fields curated - Click Resume to continue`
+            this.statusClass = 'status-info'
+          } else {
+            this.statusText = `${response.data.length} suggestions loaded - Click Resume to review`
+            this.statusClass = 'status-info'
+          }
+          
+          console.log(`Loaded ${response.data.length} previously saved suggestions for entity ${this.selectedEntityId} (${completed}/${total} complete)`)
+        } else {
+          this.statusText = 'Ready to start'
+          this.statusClass = 'status-ready'
+        }
+      } catch (error) {
+        console.error('Failed to load saved suggestions:', error)
+        // Don't show error to user - it's fine if there are no saved suggestions
+      }
     },
     
     async onAIToggleChange() {
@@ -791,11 +886,21 @@ export default {
       if (this.selectedEntityId) {
         // Re-scrape with new AI setting
         await this.scrapeContent()
+        // Reload saved suggestions after scraping
+        await this.loadSavedSuggestions()
       }
     },
     
     async startCuration() {
       if (!this.selectedEntityId || !this.scrapedContent.pages.length) return
+      
+      // If already has suggestions, just start curation mode
+      if (this.aiSuggestions.length > 0) {
+        this.curationStarted = true
+        this.statusText = `Curation active - ${this.aiSuggestions.length} suggestions loaded`
+        this.statusClass = 'status-success'
+        return
+      }
       
       this.isLoading = true
       this.statusText = this.useAI ? 'Generating AI suggestions...' : 'Preparing manual curation...'
@@ -803,7 +908,7 @@ export default {
       
       try {
         if (this.useAI) {
-          // Generate AI suggestions with current confidence threshold
+          // Generate NEW AI suggestions only if none exist
           const response = await axios.post(`/api/entities/${this.selectedEntityId}/scrape`, {
             use_ai: true
         })
@@ -989,6 +1094,28 @@ export default {
       return highlighted
     },
     
+    getEntityProgressText() {
+      // Show progress text for current selected entity
+      if (!this.aiSuggestions.length) return ''
+      
+      // SAME completion logic as updateCurationProgress
+      const completed = this.aiSuggestions.filter(s => 
+        s.ai_generated === false ||  // Manual entries count as complete
+        s.status === 'accepted' || 
+        s.status === 'rejected' || 
+        s.status === 'edited'
+      ).length
+      const total = this.properties.length
+      
+      if (completed === total) {
+        return `✓ All ${total} fields completed`
+      } else if (completed > 0) {
+        return `📊 Progress: ${completed}/${total} fields curated`
+      } else {
+        return `📋 ${this.aiSuggestions.length} suggestions loaded`
+      }
+    },
+    
     getStatusClass(suggestion) {
       switch (suggestion.status) {
         case 'accepted': return 'status-accepted'
@@ -1025,11 +1152,38 @@ export default {
           if (index !== -1) {
             this.aiSuggestions[index] = response.data.suggestion
           }
+          
+          // Update progress status after each action
+          this.updateCurationProgress()
+          
           console.log(`${action}ed suggestion ${suggestionId}`)
         }
       } catch (error) {
         console.error(`Failed to ${action} suggestion:`, error)
         alert(`Failed to ${action} suggestion: ${error.response?.data?.error || error.message}`)
+      }
+    },
+    
+    updateCurationProgress() {
+      // Update status text with current progress
+      // Count: accepted/rejected/edited AI suggestions + ALL manual entries
+      const completed = this.aiSuggestions.filter(s => 
+        s.ai_generated === false ||  // Manual entries always count as complete
+        s.status === 'accepted' || 
+        s.status === 'rejected' || 
+        s.status === 'edited'
+      ).length
+      const total = this.properties.length
+      
+      if (completed === total) {
+        this.statusText = `✓ All ${total} fields complete!`
+        this.statusClass = 'status-complete'
+      } else if (completed > 0) {
+        this.statusText = `${completed}/${total} fields curated`
+        this.statusClass = 'status-in-progress'
+      } else {
+        this.statusText = 'Curation active'
+        this.statusClass = 'status-success'
       }
     },
     
@@ -1086,6 +1240,22 @@ export default {
         
         if (response.data.success) {
           console.log(`Saved manual field ${field.name}`)
+          
+          // Add the saved suggestion to our list
+          if (response.data.suggestion) {
+            const existingIndex = this.aiSuggestions.findIndex(s => s.property_id === field.id)
+            if (existingIndex !== -1) {
+              // Update existing
+              this.aiSuggestions[existingIndex] = response.data.suggestion
+            } else {
+              // Add new
+              this.aiSuggestions.push(response.data.suggestion)
+            }
+          }
+          
+          // Update progress
+          this.updateCurationProgress()
+          
           // Clear the field after saving
           this.clearManualField(field)
           alert(`Saved ${field.name} successfully!`)
@@ -1131,6 +1301,9 @@ export default {
            if (index !== -1) {
             this.aiSuggestions[index] = response.data.suggestion
            }
+           
+           // Update progress after edit
+           this.updateCurationProgress()
            
            console.log('Suggestion edited successfully')
            this.closeEditModal()
@@ -1406,6 +1579,17 @@ html, body {
   background: #f5f5f5;
 }
 
+.entity-progress-info {
+  margin-top: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: linear-gradient(135deg, #f3e5f5 0%, #faf5ff 100%);
+  border-left: 3px solid #8B5CF6;
+  border-radius: 0.375rem;
+  font-size: 0.85rem;
+  color: #6b21a8;
+  font-weight: 600;
+}
+
 .ai-toggle-label {
   display: flex;
   align-items: center;
@@ -1596,6 +1780,35 @@ html, body {
 
 .status-error .status-dot {
   background: #c62828;
+}
+
+.status-info {
+  background: #f3e5f5;
+  color: #8B5CF6;
+}
+
+.status-info .status-dot {
+  background: #8B5CF6;
+}
+
+.status-in-progress {
+  background: #fff8e1;
+  color: #f57c00;
+}
+
+.status-in-progress .status-dot {
+  background: #f57c00;
+  animation: pulse 1.5s infinite;
+}
+
+.status-complete {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.status-complete .status-dot {
+  background: #2e7d32;
+  animation: none;
 }
 
 @keyframes pulse {
@@ -2178,7 +2391,18 @@ html, body {
   border: 1px solid #ffe0b2;
 }
 
-/* AI Suggestion Section - Redesigned */
+/* Manual Entry Saved Section - Clean, NO AI elements */
+.manual-saved-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.manual-value {
+  border-color: #9333ea !important;
+}
+
+/* AI Suggestion Section - ONLY for AI-generated */
 .ai-suggestion-section {
   display: flex;
   flex-direction: column;
@@ -2337,6 +2561,12 @@ html, body {
 .status-edited {
   background: #fff3e0;
   color: #f57c00;
+}
+
+.status-manual {
+  background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+  color: #7b1fa2;
+  font-weight: 600;
 }
 
 .status-pending {
