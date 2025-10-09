@@ -330,6 +330,13 @@
                   <div class="status-display status-manual">
                     ✓ SAVED
                   </div>
+                  <button
+                    @click.stop="editSuggestion(field.aiSuggestion)"
+                    class="action-btn edit-btn-secondary" 
+                  >
+                    <span class="btn-icon">✎</span>
+                    <span class="btn-text">Edit</span>
+                  </button>
                 </div>
               </div>
               
@@ -383,11 +390,18 @@
                     </button>
                   </template>
                   
-                  <!-- Curated AI Suggestion: Show status badge -->
+                  <!-- Curated AI Suggestion: Show status badge + Edit button -->
                   <template v-else>
                     <div class="status-display" :class="getStatusClass(field.aiSuggestion)">
                       {{ field.aiSuggestion.status === 'accepted' ? '✓ ACCEPTED' : field.aiSuggestion.status.toUpperCase() }}
                     </div>
+                    <button
+                      @click.stop="editSuggestion(field.aiSuggestion)"
+                      class="action-btn edit-btn-secondary" 
+                    >
+                      <span class="btn-icon">✎</span>
+                      <span class="btn-text">Edit</span>
+                    </button>
                   </template>
               </div>
           </div>
@@ -1256,9 +1270,11 @@ export default {
           // Update progress
           this.updateCurationProgress()
           
-          // Clear the field after saving
+          // Clear the manual input field
           this.clearManualField(field)
-          alert(`Saved ${field.name} successfully!`)
+          
+          // No popup - silent save with visual feedback in status
+          console.log(`✅ Saved ${field.name} successfully`)
         }
       } catch (error) {
         console.error('Failed to save manual field:', error)
@@ -2539,6 +2555,23 @@ html, body {
   border-color: #9333ea;
   transform: translateY(-2px);
   box-shadow: 0 4px 16px rgba(167, 139, 250, 0.4);
+}
+
+.edit-btn-secondary {
+  background: transparent;
+  color: #6b7280;
+  border-color: #d1d5db;
+  padding: 0.5rem 0.875rem;
+  flex: 0 0 auto;
+  min-width: 70px;
+}
+
+.edit-btn-secondary:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+  color: #374151;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(107, 114, 128, 0.15);
 }
 
 .status-display {

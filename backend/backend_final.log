@@ -75,3 +75,71 @@ INFO:app:Created new manual suggestion: 6 with evidence
 INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 15:35:08] "[35m[1mPOST /api/manual-metadata HTTP/1.1[0m" 201 -
 INFO:app:Listing all properties
 INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 15:37:51] "GET /api/properties HTTP/1.1" 200 -
+INFO:app:Listing all sources
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 15:46:12] "GET /api/sources HTTP/1.1" 200 -
+INFO:app:Listing all properties
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 15:46:12] "GET /api/properties HTTP/1.1" 200 -
+INFO:app:Listing all sources
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 15:50:25] "GET /api/sources HTTP/1.1" 200 -
+INFO:app:Listing all properties
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 15:50:25] "GET /api/properties HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 1
+INFO:app:Processing entity 'Michael Blum' with AI=disabled
+INFO:app:Fetching existing suggestions for entity Michael Blum from external API
+INFO:app:Found 5 suggestions for entity Michael Blum
+WARNING:app:No URL found in suggestions for entity Michael Blum
+INFO:app:Found 2 contexts for entity Michael Blum
+INFO:app:Extracted URL from context for entity Michael Blum: https://www.ifi.uzh.ch/en/ivda/team/michael_blum.html
+INFO:app:Fetching HTML from: https://www.ifi.uzh.ch/en/ivda/team/michael_blum.html
+INFO:app:Successfully processed page: Michael Blum | Department of Informatics  | UZH...
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 15:50:29] "POST /api/entities/1/scrape HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 15:50:29] "GET /api/suggestions?edition_id=1&source_id=1 HTTP/1.1" 200 -
+INFO:app:Suggestion 1 edited by curator
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 15:50:37] "PUT /api/suggestions/1/edit HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 3
+INFO:app:Processing entity 'Jürgen Bernard' with AI=disabled
+INFO:app:Fetching existing suggestions for entity Jürgen Bernard from external API
+INFO:app:Found 5 suggestions for entity Jürgen Bernard
+WARNING:app:No URL found in suggestions for entity Jürgen Bernard
+INFO:app:Found 2 contexts for entity Jürgen Bernard
+INFO:app:Extracted URL from context for entity Jürgen Bernard: https://www.ifi.uzh.ch/en/ivda/team/bernard.html
+INFO:app:Fetching HTML from: https://www.ifi.uzh.ch/en/ivda/team/bernard.html
+INFO:app:Successfully processed page: Jürgen Bernard, Prof. Dr. | Department of Informat...
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 15:50:42] "POST /api/entities/3/scrape HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 15:50:42] "GET /api/suggestions?edition_id=3&source_id=1 HTTP/1.1" 200 -
+INFO:app:Created new manual suggestion: 7 with evidence
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 15:50:49] "[35m[1mPOST /api/manual-metadata HTTP/1.1[0m" 201 -
+INFO:app:Created new manual suggestion: 8 with evidence
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 15:50:53] "[35m[1mPOST /api/manual-metadata HTTP/1.1[0m" 201 -
+INFO:app:Created new manual suggestion: 9 with evidence
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 15:50:57] "[35m[1mPOST /api/manual-metadata HTTP/1.1[0m" 201 -
+INFO:app:Created new manual suggestion: 10 with evidence
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 15:51:10] "[35m[1mPOST /api/manual-metadata HTTP/1.1[0m" 201 -
+INFO:app:Created new manual suggestion: 11 with evidence
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 15:51:15] "[35m[1mPOST /api/manual-metadata HTTP/1.1[0m" 201 -
+INFO:app:Scraping content for entity 4
+INFO:app:Processing entity 'Tobias Jammerthal' with AI=disabled
+INFO:app:Fetching existing suggestions for entity Tobias Jammerthal from external API
+INFO:app:Found 5 suggestions for entity Tobias Jammerthal
+WARNING:app:No URL found in suggestions for entity Tobias Jammerthal
+INFO:app:Found 2 contexts for entity Tobias Jammerthal
+INFO:app:Extracted URL from context for entity Tobias Jammerthal: https://www.theologie.uzh.ch/de/faecher/kirchengeschichte/kg-dogmengeschichte/team/jammerthal.html
+INFO:app:Fetching HTML from: https://www.theologie.uzh.ch/de/faecher/kirchengeschichte/kg-dogmengeschichte/team/jammerthal.html
+INFO:app:Successfully processed page: Tobias Jammerthal | Theologisches Seminar | UZH...
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 15:51:20] "POST /api/entities/4/scrape HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 15:51:20] "GET /api/suggestions?edition_id=4&source_id=1 HTTP/1.1" 200 -
+INFO:app:Scraping content for entity 3
+INFO:app:Processing entity 'Jürgen Bernard' with AI=disabled
+INFO:app:Fetching existing suggestions for entity Jürgen Bernard from external API
+INFO:app:Found 5 suggestions for entity Jürgen Bernard
+WARNING:app:No URL found in suggestions for entity Jürgen Bernard
+INFO:app:Found 2 contexts for entity Jürgen Bernard
+INFO:app:Extracted URL from context for entity Jürgen Bernard: https://www.ifi.uzh.ch/en/ivda/team/bernard.html
+INFO:app:Fetching HTML from: https://www.ifi.uzh.ch/en/ivda/team/bernard.html
+INFO:app:Successfully processed page: Jürgen Bernard, Prof. Dr. | Department of Informat...
+INFO:app:Manual Processing: 1 pages, ready for manual curation
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 15:51:22] "POST /api/entities/3/scrape HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [08/Oct/2025 15:51:22] "GET /api/suggestions?edition_id=3&source_id=1 HTTP/1.1" 200 -
