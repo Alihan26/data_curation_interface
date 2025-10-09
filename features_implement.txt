@@ -15,30 +15,32 @@ characters, then you should be able to click on the ... to see the rest of the t
 [Done] 3.) We don't need to see the "Evidence" part within a metadata field on the frontend anymore,
 because the evidence is literally being highlighted in the text field. 
 
-[Done] 4.) The highlighting should work well with this new system too!
+[Halfdone] 4.) The highlighting should work well with this new system too!
 
-5.) The UI has shit design flows in the metadata fields sometimes
+[Halfdone] 5.) The UI has shit design flows in the metadata fields sometimes
+
 5.2) I don't like that everything is different colors, make purple the main thing, also dark green
 
 6.) There are sometimes multiple values, but they are being shown weirdly
 
 7.) AI Agent 2 finetuning, + it's so slow!!
 
-8.) Saving your results
+[Halfdone] 8.) Saving your results
 
 9.) Logs for the Use Case
 
 10.) Go over midterm notes
 
-11.) IMPORTANT: For the ones that were fully curated, the first page when we click on the
+[Halfdone] 11.) IMPORTANT: For the entities that were fully curated, the first page when we click on the
 entity shows their metadata fields that need to be populated right? Instead, only for the ones
-that have populated each metadata field, for this source per entity 5/5, we will show it's results
-on the first entity page, not editable!! only results, and if we click on manually curated
-or curate with ai or something then we can edit it!
+that have populated each metadata field, (for this source per entity 5/5), we will show it's results
+on the first entity page in a not editable way!! only results, and if we click on manually curated
+or curate with ai or something then we can edit it again.!
 
 Use Case playbook
 
 Backend should follow RESTful guidelines. No code leaks. No dead codes.
+
 
 
 

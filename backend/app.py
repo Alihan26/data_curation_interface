@@ -12,6 +12,9 @@ from dotenv import load_dotenv
 # Import metadata curation client
 from metadata_curation_client import CurationAPIClient, PropertyType, SourceManager
 
+# Import scraping service
+from services.scraper import EntityScraper, ScraperError, HTMLFetchError, ContentExtractionError
+
 # --------------------------------------------------------------------------
 # Constants (external demo endpoint used by the preview helper below)
 # --------------------------------------------------------------------------
@@ -73,6 +76,10 @@ except ImportError as e:
 except Exception as e:
     app.logger.error(f"Failed to initialize AI service: {e}")
     ai_service = None
+
+# Initialize scraping service
+entity_scraper = EntityScraper(curation_client)
+logger.info("Entity scraping service initialized")
 
 
 class PropertyType(str, Enum):
@@ -727,94 +734,9 @@ def handle_exception(e):
     return jsonify({"error": "Internal Server Error", "message": "An unexpected error occurred"}), 500
 
 
-def fetch_html(url):
-    headers = {"User-Agent": "CurationPreview/1.0"}
-    response = requests.get(url, timeout=20, headers=headers)
-    response.raise_for_status()
-    return response.text
-
-
-def _extract_structured_content(soup, url):
-    """
-    Extract structured content from HTML while preserving layout structure.
-    Returns a structured representation of headers, navigation, main content, footer.
-    """
-    structured = {
-        "navigation": None,
-        "header": None,
-        "main_sections": [],
-        "footer": None
-    }
-    
-    # Extract navigation (nav, header with menu items)
-    nav_elements = soup.find_all(['nav', 'header'], limit=3)
-    if nav_elements:
-        nav_text = []
-        for nav in nav_elements:
-            text = nav.get_text(separator=' ', strip=True)
-            if text and len(text) < 500:  # Keep navigation concise
-                nav_text.append(text)
-        if nav_text:
-            structured["navigation"] = ' | '.join(nav_text)
-    
-    # Extract main headers (h1, h2 at page top)
-    headers = []
-    for tag in ['h1', 'h2']:
-        h_tags = soup.find_all(tag, limit=3)
-        for h in h_tags:
-            text = h.get_text(strip=True)
-            if text:
-                headers.append({"level": tag, "text": text})
-    structured["header"] = headers
-    
-    # Extract main content sections
-    # Look for main, article, or sections with meaningful content
-    main_container = soup.find('main') or soup.find('article') or soup.find('body')
-    
-    if main_container:
-        # Find all section-like structures
-        sections = main_container.find_all(['section', 'div'], class_=lambda x: x and any(
-            keyword in str(x).lower() for keyword in ['content', 'main', 'bio', 'profile', 'info', 'about']
-        ))
-        
-        if not sections:
-            # Fallback: look for divs with substantial text
-            sections = main_container.find_all(['div', 'section'], recursive=False)
-        
-        for section in sections[:10]:  # Limit to 10 sections
-            # Extract section header
-            section_header = section.find(['h1', 'h2', 'h3', 'h4'])
-            section_title = section_header.get_text(strip=True) if section_header else None
-            
-            # Extract paragraphs
-            paragraphs = []
-            for p in section.find_all('p', limit=20):
-                text = p.get_text(strip=True)
-                if text and len(text) > 20:  # Skip very short paragraphs
-                    paragraphs.append(text)
-            
-            # Extract lists
-            lists = []
-            for ul in section.find_all(['ul', 'ol'], limit=5):
-                items = [li.get_text(strip=True) for li in ul.find_all('li', limit=10)]
-                if items:
-                    lists.append(items)
-            
-            if paragraphs or lists:
-                structured["main_sections"].append({
-                    "title": section_title,
-                    "paragraphs": paragraphs,
-                    "lists": lists
-                })
-    
-    # Extract footer
-    footer = soup.find('footer')
-    if footer:
-        footer_text = footer.get_text(separator=' ', strip=True)
-        if footer_text and len(footer_text) < 300:
-            structured["footer"] = footer_text
-    
-    return structured
+# Legacy helper functions removed - now using services/scraper.py
+# These functions have been replaced by the EntityScraper service for better
+# separation of concerns, error handling, and testability
 
 
 @app.route('/api/health', methods=['GET'])
@@ -848,19 +770,6 @@ def scrape_entity_content(entity_id: int):
         if not source:
             return jsonify({"error": "Source not found"}), 404
 
-        # Determine URLs based on entity
-        urls = []
-        if entity["entity_name"] == "Martha Ballard's Diary Online":
-            urls = ['https://dohistory.org/diary/about.html']
-        elif entity["entity_name"] == "Atharvaveda Paippalāda":
-            urls = ['https://www.atharvavedapaippalada.uzh.ch/en.html']
-        elif not entity.get("is_dummy", True):  # Real entity from external API
-            # For real entities, we don't have URLs - use placeholder content
-            urls = []  # Will generate placeholder content
-        else:
-            # Use provided URLs or default
-            urls = data.get('urls', ['https://www.atharvavedapaippalada.uzh.ch/en.html'])
-
         # Check if AI suggestions are requested
         use_ai = data.get('use_ai', False)
         
@@ -868,146 +777,14 @@ def scrape_entity_content(entity_id: int):
         suggestions = []
         logger.info(f"Processing entity '{entity['entity_name']}' with AI={'enabled' if use_ai else 'disabled'}")
 
-        pages_data = []
+        # Use the new robust scraping service
+        fallback_urls = data.get('urls', None)
+        pages_data, scraping_errors = entity_scraper.scrape_entity(entity, source, fallback_urls)
         
-        if not urls:  # Real entity from external API - fetch URL from existing suggestions
-            # Get the entity's existing suggestions from the external API
-            try:
-                if curation_client:
-                    logger.info(f"Fetching existing suggestions for entity {entity['entity_name']} from external API")
-                    try:
-                        # FIXED: get_suggestions() now takes no parameters - get all suggestions and filter
-                        all_suggestions = curation_client.get_suggestions()
-                        
-                        # Filter suggestions for this entity
-                        entity_suggestions = [s for s in all_suggestions if s.get('entity_id') == entity["id"]]
-                        
-                        if entity_suggestions:
-                            logger.info(f"Found {len(entity_suggestions)} suggestions for entity {entity['entity_name']}")
-                            
-                            # Look for URL suggestion (property_id == 2 for URL)
-                            url_suggestion = None
-                            for suggestion in entity_suggestions:
-                                # Check if this is a URL suggestion (property_id == 2)
-                                if suggestion.get('property_id') == 2:
-                                    url_suggestion = suggestion
-                                    break
-                            
-                            if url_suggestion and url_suggestion.get('custom_value'):
-                                real_url = url_suggestion['custom_value']
-                                logger.info(f"Found real URL for entity {entity['entity_name']}: {real_url}")
-                                urls = [real_url]
-                            else:
-                                logger.warning(f"No URL found in suggestions for entity {entity['entity_name']}")
-                                # Try to get contexts and extract URLs from them (for researcher profiles)
-                                try:
-                                    contexts = curation_client.get_contexts(entity["id"])
-                                    if contexts:
-                                        logger.info(f"Found {len(contexts)} contexts for entity {entity['entity_name']}")
-                                        
-                                        # Try to extract URLs from context text
-                                        import re
-                                        extracted_urls = []
-                                        for ctx in contexts:
-                                            context_value = ctx.get('value', '')
-                                            # Find URLs in context text (http:// or https://)
-                                            found_urls = re.findall(r'https?://[^\s<>"]+', context_value)
-                                            extracted_urls.extend(found_urls)
-                                        
-                                        if extracted_urls:
-                                            # Use the first extracted URL for scraping
-                                            extracted_url = extracted_urls[0]
-                                            logger.info(f"Extracted URL from context for entity {entity['entity_name']}: {extracted_url}")
-                                            urls = [extracted_url]
-                                        else:
-                                            # No URL found in context, use context text as fallback
-                                            logger.warning(f"No URL found in context for entity {entity['entity_name']}, using context text")
-                                            context_texts = [ctx.get('value', '') for ctx in contexts]
-                                            combined_text = '\n\n'.join(context_texts)
-                                            
-                                            if combined_text.strip():
-                                                pages_data.append({
-                                                    "url": f"context://entity-{entity['id']}",
-                                                    "title": f"Entity: {entity['entity_name']}",
-                                                    "text_content": combined_text,
-                                                    "char_count": len(combined_text),
-                                                    "word_count": len(combined_text.split())
-                                                })
-                                                logger.info(f"Loaded context content for entity {entity['entity_name']}")
-                                except Exception as ctx_error:
-                                    logger.error(f"Failed to fetch contexts: {ctx_error}")
-                        else:
-                            logger.warning(f"No existing suggestions found for entity {entity['entity_name']}")
-                    except Exception as e:
-                        logger.error(f"Failed to fetch suggestions for entity {entity['entity_name']}: {e}")
-                        import traceback
-                        logger.error(f"Traceback: {traceback.format_exc()}")
-            except Exception as e:
-                logger.error(f"Failed to fetch suggestions for entity {entity['entity_name']}: {e}")
-            
-            # If we still don't have URLs AND no content was loaded, generate placeholder
-            if not urls and not pages_data:
-                placeholder_content = f"""
-                Entity Information:
-                - Entity: {entity['entity_name']}
-                - Source: {source['name']}
-                - Source ID: {entity.get('source_internal_id', 'N/A')}
-                - Database ID: {entity['id']}
-                
-                This is a real entity from the external metadata curation API. 
-                No URL was found and no context content is available for this entity.
-                
-                You can still curate metadata for this entity manually or with AI suggestions.
-                The AI will work with this placeholder content to generate suggestions.
-                """
-                
-                pages_data.append({
-                    "url": f"placeholder://entity-{entity['id']}",
-                    "title": f"Entity: {entity['entity_name']}",
-                    "text_content": placeholder_content.strip(),
-                    "char_count": len(placeholder_content),
-                    "word_count": len(placeholder_content.split())
-                })
-                logger.info(f"Generated placeholder content for real entity (no URL/context found): {entity['entity_name']}")
-        
-        if urls:
-            # URL scraping for entities (both dummy and real entities with URLs)
-            for url in urls:
-                try:
-                    logger.info(f"Fetching HTML from: {url}")
-                    html = fetch_html(url)
-                    soup = BeautifulSoup(html, "html.parser")
-                    title = soup.title.string if soup.title else url
-                    
-                    # Extract structured content preserving webpage layout
-                    structured_content = _extract_structured_content(soup, url)
-                    
-                    # Also get plain text for fallback
-                    text_content = soup.get_text()
-                    text_content = ' '.join(text_content.split())
-
-                    if len(text_content) > 10000:
-                        text_content = text_content[:10000] + "... [Content truncated]"
-
-                    pages_data.append({
-                        "url": url,
-                        "title": title,
-                        "text_content": text_content,
-                        "structured_content": structured_content,
-                        "char_count": len(text_content),
-                        "word_count": len(text_content.split())
-                    })
-                    logger.info(f"Successfully processed page: {title[:50]}...")
-                except Exception as e:
-                    logger.error(f"Error processing URL {url}: {str(e)}")
-                    pages_data.append({
-                        "url": url,
-                        "title": f"Error: {str(e)}",
-                        "text_content": f"Failed to fetch: {str(e)}",
-                        "structured_content": None,
-                        "char_count": 0,
-                        "word_count": 0
-                    })
+        # Log any scraping errors
+        if scraping_errors:
+            for error in scraping_errors:
+                logger.warning(f"Scraping error: {error}")
 
         # Initialize ai_suggestions variable
         ai_suggestions = []

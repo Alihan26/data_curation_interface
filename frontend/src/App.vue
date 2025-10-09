@@ -279,8 +279,54 @@
             <span class="info-text">Content scraped. Click "Start Curation" to begin metadata entry.</span>
                 </div>
 
-          <!-- Metadata Fields List -->
-          <div class="metadata-fields">
+          <!-- Fully Curated Read-Only View -->
+          <div v-if="isEntityFullyCurated && !curationStarted" class="curated-view">
+            <div class="curated-header">
+              <div class="curated-title">
+                <span class="check-icon">✓</span>
+                <h3>Fully Curated Entity</h3>
+              </div>
+              <p class="curated-subtitle">All metadata fields have been completed for this entity</p>
+            </div>
+
+            <div class="curated-actions">
+              <button @click="resumeEditing" class="btn-resume">
+                <span class="btn-icon">✏️</span>
+                Edit Metadata
+              </button>
+              <button @click="useAI = true; startCuration()" class="btn-ai-recurate" v-if="!useAI">
+                <span class="btn-icon">🤖</span>
+                Re-curate with AI
+              </button>
+            </div>
+
+            <div class="curated-metadata">
+              <div 
+                v-for="field in curatedMetadata" 
+                :key="field.id"
+                class="curated-field"
+                :class="{ 'is-required': field.is_required }"
+              >
+                <div class="curated-field-header">
+                  <h4 class="curated-field-name">
+                    {{ field.name }}
+                    <span v-if="field.is_required" class="required-indicator">*</span>
+                  </h4>
+                  <div class="curated-field-badges">
+                    <span class="field-type-badge-small">{{ field.type.replace('_', ' ').toLowerCase() }}</span>
+                    <span v-if="field.isManual" class="manual-badge-small">✍️ Manual</span>
+                    <span v-else-if="field.confidence" class="ai-badge-small">🤖 AI {{ field.confidence }}%</span>
+                  </div>
+                </div>
+                <div class="curated-field-value">
+                  {{ field.value }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Metadata Fields List (hide if fully curated and not editing) -->
+          <div v-if="!isEntityFullyCurated || curationStarted" class="metadata-fields">
             <div 
               v-for="field in metadataFields" 
               :key="field.id" 
@@ -699,6 +745,48 @@ export default {
       }).length
     },
     
+    // Check if entity is fully curated (all fields have accepted/saved values)
+    isEntityFullyCurated() {
+      if (!this.selectedEntityId || !this.properties.length) return false
+      
+      // Check if we have a suggestion (accepted/saved) for every property
+      const completedFields = this.aiSuggestions.filter(s => 
+        s.ai_generated === false ||  // Manual entries are always complete
+        s.status === 'accepted' || 
+        s.status === 'edited'
+      ).length
+      
+      return completedFields === this.properties.length && completedFields > 0
+    },
+    
+    // Get curated data for read-only view
+    curatedMetadata() {
+      if (!this.isEntityFullyCurated) return []
+      
+      return this.properties.map(property => {
+        const suggestion = this.aiSuggestions.find(s => s.property_id === property.id)
+        
+        // Get the display value
+        let displayValue = 'N/A'
+        if (suggestion) {
+          if (suggestion.property_option_id) {
+            const option = property.property_options?.find(o => o.id === suggestion.property_option_id)
+            displayValue = option ? option.name : 'Unknown option'
+          } else if (suggestion.custom_value !== null && suggestion.custom_value !== undefined) {
+            displayValue = suggestion.custom_value
+          }
+        }
+        
+        return {
+          ...property,
+          value: displayValue,
+          suggestion: suggestion,
+          isManual: suggestion?.ai_generated === false,
+          confidence: suggestion?.confidence ? Math.round(suggestion.confidence * 100) : null
+        }
+      })
+    },
+    
     filteredAISuggestions() {
       if (!this.useAI || !this.curationStarted) return []
       
@@ -903,6 +991,14 @@ export default {
         // Reload saved suggestions after scraping
         await this.loadSavedSuggestions()
       }
+    },
+    
+    resumeEditing() {
+      // Allow editing of fully curated entity
+      this.curationStarted = true
+      this.statusText = 'Editing curated metadata'
+      this.statusClass = 'status-in-progress'
+      this.updateCurationProgress()
     },
     
     async startCuration() {
@@ -2249,6 +2345,185 @@ html, body {
 .field-preview:hover {
   border-color: #b0b0b0;
   background: linear-gradient(135deg, #f0f0f0 0%, #e8e8e8 100%);
+}
+
+/* Curated View Styles */
+.curated-view {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  border-radius: 1rem;
+  padding: 2rem;
+  margin-bottom: 1.5rem;
+  border: 2px solid #86efac;
+}
+
+.curated-header {
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.curated-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.check-icon {
+  font-size: 2rem;
+  color: #16a34a;
+  background: white;
+  width: 3rem;
+  height: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(22, 163, 74, 0.2);
+}
+
+.curated-title h3 {
+  margin: 0;
+  color: #15803d;
+  font-size: 1.5rem;
+}
+
+.curated-subtitle {
+  color: #166534;
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.curated-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.btn-resume,
+.btn-ai-recurate {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-resume {
+  background: #3b82f6;
+  color: white;
+}
+
+.btn-resume:hover {
+  background: #2563eb;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.btn-ai-recurate {
+  background: #8b5cf6;
+  color: white;
+}
+
+.btn-ai-recurate:hover {
+  background: #7c3aed;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.btn-icon {
+  font-size: 1.1rem;
+}
+
+.curated-metadata {
+  display: grid;
+  gap: 1rem;
+}
+
+.curated-field {
+  background: white;
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  border: 1px solid #d1d5db;
+  transition: all 0.2s ease;
+}
+
+.curated-field:hover {
+  border-color: #9ca3af;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.curated-field.is-required {
+  border-left: 4px solid #f59e0b;
+}
+
+.curated-field-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.curated-field-name {
+  margin: 0;
+  font-size: 1rem;
+  color: #374151;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.curated-field-badges {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.field-type-badge-small {
+  padding: 0.25rem 0.5rem;
+  background: #e5e7eb;
+  color: #6b7280;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.manual-badge-small {
+  padding: 0.25rem 0.5rem;
+  background: #dbeafe;
+  color: #1e40af;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.ai-badge-small {
+  padding: 0.25rem 0.5rem;
+  background: #f3e8ff;
+  color: #6b21a8;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.curated-field-value {
+  color: #111827;
+  font-size: 1rem;
+  padding: 0.75rem;
+  background: #f9fafb;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
+  min-height: 2.5rem;
+  display: flex;
+  align-items: center;
 }
 
 .preview-info {
