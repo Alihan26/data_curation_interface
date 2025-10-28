@@ -1,0 +1,17 @@
+{
+  "entity_id": 11,
+  "entity_name": "Maria-Teresa De Rosa Palmini",
+  "source_id": 2,
+  "source_name": "Dh Community Profiles",
+  "curation_mode": "manual",
+  "confidence_threshold": 40,
+  "start_time": "2025-10-25T08:52:01.616Z",
+  "completion_time": "2025-10-25T08:55:56.255Z",
+  "duration_seconds": 234.639,
+  "total_fields": 5,
+  "ai_suggestions_count": 0,
+  "manual_entries_count": 5,
+  "timestamp": "2025-10-25T08:55:56.255Z",
+  "logged_at": "2025-10-25T08:55:56.267663+00:00",
+  "log_filename": "11_20251025_105556.json"
+}

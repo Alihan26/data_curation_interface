@@ -1,0 +1,17 @@
+{
+  "entity_id": 2,
+  "entity_name": "Moritz M\u00e4hr",
+  "source_id": 2,
+  "source_name": "Dh Community Profiles",
+  "curation_mode": "manual",
+  "confidence_threshold": 40,
+  "start_time": "2025-10-24T08:40:24.210Z",
+  "completion_time": "2025-10-24T08:41:50.598Z",
+  "duration_seconds": 86.388,
+  "total_fields": 5,
+  "ai_suggestions_count": 0,
+  "manual_entries_count": 5,
+  "timestamp": "2025-10-24T08:41:50.598Z",
+  "logged_at": "2025-10-24T08:41:50.604895+00:00",
+  "log_filename": "2_20251024_104150.json"
+}

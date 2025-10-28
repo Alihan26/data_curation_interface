@@ -1,0 +1,17 @@
+{
+  "entity_id": 3,
+  "entity_name": "J\u00fcrgen Bernard",
+  "source_id": 2,
+  "source_name": "Dh Community Profiles",
+  "curation_mode": "ai",
+  "confidence_threshold": 40,
+  "start_time": "2025-10-25T08:43:55.093Z",
+  "completion_time": "2025-10-25T08:45:39.499Z",
+  "duration_seconds": 104.406,
+  "total_fields": 5,
+  "ai_suggestions_count": 6,
+  "manual_entries_count": 0,
+  "timestamp": "2025-10-25T08:45:39.500Z",
+  "logged_at": "2025-10-25T08:45:39.509037+00:00",
+  "log_filename": "3_20251025_104539.json"
+}

@@ -1,0 +1,17 @@
+{
+  "entity_id": 1,
+  "entity_name": "Michael Blum",
+  "source_id": 2,
+  "source_name": "Dh Community Profiles",
+  "curation_mode": "ai",
+  "confidence_threshold": 40,
+  "start_time": "2025-10-25T08:39:56.604Z",
+  "completion_time": "2025-10-25T08:43:32.357Z",
+  "duration_seconds": 215.753,
+  "total_fields": 5,
+  "ai_suggestions_count": 7,
+  "manual_entries_count": 1,
+  "timestamp": "2025-10-25T08:43:32.357Z",
+  "logged_at": "2025-10-25T08:43:32.364139+00:00",
+  "log_filename": "1_20251025_104332.json"
+}

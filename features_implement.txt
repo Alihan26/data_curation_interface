@@ -1,0 +1,408 @@
+FEATURES I WANT TO IMPLEMENT:
+
+
+
+
+UI Design Pitfalls:
+
+[Done] 1.) The Scraped text field has zero structure. Can we make sure to adapt it in a way
+so that it looks similar to how it looks like on it's original webpage?
+
+[Done] 2.) In AI suggested metadata fields, the AI reasoning is blocked off by ... I want to see the 
+whole thing, the cutoff should be done after like 500 characters, and if it's longer than 500 
+characters, then you should be able to click on the ... to see the rest of the text.
+
+[Done] 3.) We don't need to see the "Evidence" part within a metadata field on the frontend anymore,
+because the evidence is literally being highlighted in the text field. 
+
+[Halfdone] 4.) The highlighting should work well with this new system too!
+
+[Halfdone] 5.) The UI has shit design flows in the metadata fields sometimes
+
+5.2) I don't like that everything is different colors, make purple the main thing, also dark green
+
+6.) There are sometimes multiple values, but they are being shown weirdly
+
+7.) AI Agent 2 finetuning, + it's so slow!!
+
+[Halfdone] 8.) Saving your results
+
+[Done] 9.) Logs for the Use Case
+
+10.) Go over midterm notes
+
+[Halfdone] 11.) IMPORTANT: For the entities that were fully curated, the first page when we click on the
+entity shows their metadata fields that need to be populated right? Instead, only for the ones
+that have populated each metadata field, (for this source per entity 5/5), we will show it's results
+on the first entity page in a not editable way!! only results, and if we click on manually curated
+or curate with ai or something then we can edit it again.!
+
+12.) When the last metadata has been curated, the page with 
+metadata results has to shown Immediately instead of clicking
+on the entity again 
+
+13.) Change the two shitty urls.
+
+-> Use Case playbook
+
+-> Backend should follow RESTful guidelines. No code leaks. No dead codes.
+
+
+
+
+
+
+GENERAL:
+
+The numbers in the "Metadata Fields Overview" are not updated.
+
+After curation with the ai, we have the metadata fields. Right now, the evidence is being shown inside the metadata field, and also highlighted in the text. But there is some incoherence. There may be some information overlap, so we need to find a way to show that the same evidence supports two metadata fields if that's the case. And in the Metadata field, i don't want only the "Supporting Evidence", but i also want to read the reasoning of the AI.
+
+Speaking of reasoning of AI, how about we create another AI agent that sums up the results to the user, and guides him step by step until the end, after each metadata field has been either accepted, rejected, edited etc. or filled in manually, can we try to integrate it please? So if we try to do that, how do we register this second ai agent?
+
+I want to see the details of the gpt api that i'm using, and details about my workflow. Each curation workflow, after publishing should show me how much tokens it cost me, how much time the whole process has cost me, and how much money i paid. And also, the "Accept all Pending" button does not work? Check everything. The history should not be erased! when i go back to Pre-Curation page, the Metadata Overview numbers should be changed according to my changes in the post curation
+
+Should I not have an external Database like SQL or something?
+
+Refactoring Frontend: I want everything to be more atomic. Also in the backend. Just like in Software Engineering with Thomas Fritz
+
+Source name should only be selectable, not generatable. Only entity should be addable.
+
+Go over this code again. Three times actually. What improvements and errors do you see? Fix them and give me new suggestions.
+
+Metadata Fields Overview: What are those numbers and titles??
+
+Another AI Agent can come and check whether two curators that work on the same task have created two similar metadata fields, if yes, suggest to merge them
+
+We need more error logging, especially with the API endpoints. What if token limit for gpt is reached?
+
+"How to use this system" should be able to be closed and reopened.
+
+
+
+I want to be able to add new metadata fields manually, also giving the option to highlight the text manually. Give option to choose highlighting color manually.
+
+I want the AI to be able to add new metadata fields manually.
+
+Being able to add new metadata fields, and transfer it back using the API.
+
+History does not work yet.
+
+The logging of the metadata fields for an entity is wrong. They should not be added each time, only updated by every time we process the same entity again, keeping it's history.
+
+PUT YOUR CODE ON GIT PLEASE
+
+Pinging empty Metadata fields for other curators?
+
+Give specific order and categorization to the metadata fields. Descriptive/Contextual? What if there are 100 metadata fields?
+
+Being able to stop the AI curation on spot.
+
+How is the Confidence exactly being done? Explain how it's done to the curator in the frontend how it's handled
+
+Afterwards, we do finetuning. But how? With API or on our own via manual updating in our code? Per template?
+
+
+
+
+
+
+
+//---------------------------------------------------------------------//
+
+
+# 🔍 **COMPREHENSIVE SYSTEM AUDIT & ANALYSIS**
+
+## **📋 SYSTEM OVERVIEW**
+
+### **Architecture**
+- **Backend**: Flask REST API (Port 8000) with in-memory data store
+- **Frontend**: Vue.js 3 + Vite SPA (Port 4000)
+- **AI Integration**: Two-agent OpenAI system (Agent A: Reasoner, Agent B: Confidence Interpreter)
+- **Data Flow**: HTML → AI Analysis → Metadata Suggestions → Human Curation → Publishing
+
+## **🎯 USE CASES & USER SCENARIOS**
+
+### **Primary Use Cases**
+
+1. **Digital Humanities Researcher**
+   - Needs to curate metadata for 100+ digital editions
+   - Wants AI assistance but needs human oversight
+   - Requires evidence-based validation
+   - Needs audit trail for academic credibility
+
+2. **Library Metadata Specialist**
+   - Processing large batches of digital collections
+   - Needs consistent metadata standards
+   - Requires bulk operations for efficiency
+   - Needs export capabilities for catalog systems
+
+3. **Academic Project Coordinator**
+   - Managing multiple curators on same project
+   - Needs collaboration features
+   - Requires quality control and review workflows
+   - Needs progress tracking and reporting
+
+### **User Workflows**
+
+#### **Scenario 1: Single Document Curation**
+```
+1. Select Source → 2. Choose Entity → 3. Configure AI → 4. Process → 
+5. Review Suggestions → 6. Accept/Reject/Edit → 7. Add Manual Fields → 
+8. Validate Evidence → 9. Publish → 10. Export
+```
+
+#### **Scenario 2: Batch Processing**
+```
+1. Import Source List → 2. Configure Templates → 3. Bulk Process → 
+4. Review by Confidence → 5. Bulk Accept High Confidence → 
+6. Manual Review Low Confidence → 7. Quality Check → 8. Batch Publish
+```
+
+#### **Scenario 3: Collaborative Curation**
+```
+1. Assign Tasks → 2. Individual Curation → 3. Cross-Review → 
+4. Conflict Resolution → 5. Supervisor Approval → 6. Final Publishing
+```
+
+## **🧪 COMPREHENSIVE TESTING RESULTS**
+
+### **✅ WORKING COMPONENTS**
+
+1. **Two-Agent AI System** ✅
+   - Agent A generates reasoning-based suggestions
+   - Agent B applies systematic confidence scoring
+   - Confidence threshold slider works correctly
+   - Evidence extraction and highlighting functional
+
+2. **Core Curation Workflow** ✅
+   - Source/Entity selection works
+   - HTML content fetching functional
+   - Suggestion accept/reject/edit works
+   - Manual metadata entry works
+   - Basic publishing validation works
+
+3. **Frontend UI/UX** ✅
+   - Pre-curation and post-curation views
+   - Responsive design with forest theme
+   - Confidence threshold slider with proper filtering
+   - Evidence highlighting in content
+   - User profile and navigation
+
+## **🚨 CRITICAL ISSUES IDENTIFIED**
+
+### **Backend Issues**
+
+1. **Memory Management**
+   - **Problem**: In-memory data store with no persistence
+   - **Impact**: Data loss on server restart
+   - **Risk**: HIGH - Production unusable
+
+2. **API Error Handling**
+   - **Problem**: Inconsistent error responses
+   - **Impact**: Frontend can't handle errors gracefully
+   - **Risk**: MEDIUM
+
+3. **Concurrency Issues**
+   - **Problem**: No thread safety in data operations
+   - **Impact**: Data corruption with multiple users
+   - **Risk**: HIGH
+
+4. **Resource Limits**
+   - **Problem**: No limits on content size or AI requests
+   - **Impact**: Potential DoS or high costs
+   - **Risk**: HIGH
+
+### **Frontend Issues**
+
+1. **State Management**
+   - **Problem**: Large monolithic Vue component (1600+ lines)
+   - **Impact**: Difficult to maintain and debug
+   - **Risk**: HIGH
+
+2. **Memory Leaks**
+   - **Problem**: Event listeners not properly cleaned up
+   - **Impact**: Performance degradation over time
+   - **Risk**: MEDIUM
+
+3. **Error Handling**
+   - **Problem**: No user-friendly error messages
+   - **Impact**: Poor user experience
+   - **Risk**: MEDIUM
+
+### **Integration Issues**
+
+1. **AI Service Reliability**
+   - **Problem**: No fallback when OpenAI API fails
+   - **Impact**: System unusable when AI down
+   - **Risk**: HIGH
+
+2. **Data Consistency**
+   - **Problem**: Frontend/backend data can get out of sync
+   - **Impact**: User sees stale data
+   - **Risk**: MEDIUM
+
+## **📋 MASTER TODO LIST**
+
+### **🔴 CRITICAL FIXES (Must Fix Immediately)**
+
+1. **Data Persistence**
+   - Replace in-memory store with SQLite/PostgreSQL
+   - Implement proper database schema
+   - Add data migration system
+   - **Priority**: CRITICAL
+   - **Effort**: 3-5 days
+
+2. **Concurrency & Thread Safety**
+   - Add proper locking mechanisms
+   - Implement transaction support
+   - Add request queuing for AI operations
+   - **Priority**: CRITICAL
+   - **Effort**: 2-3 days
+
+3. **Resource Management**
+   - Add content size limits (max 50MB per document)
+   - Implement AI request rate limiting
+   - Add timeout handling for long operations
+   - **Priority**: CRITICAL
+   - **Effort**: 1-2 days
+
+4. **Frontend Architecture Refactor**
+   - Split monolithic App.vue into components
+   - Implement proper state management (Pinia/Vuex)
+   - Add component-level error boundaries
+   - **Priority**: HIGH
+   - **Effort**: 4-6 days
+
+### **🟡 HIGH PRIORITY FEATURES**
+
+5. **Comprehensive Error Handling**
+   - Standardize API error responses
+   - Add user-friendly error messages
+   - Implement retry mechanisms
+   - **Priority**: HIGH
+   - **Effort**: 2-3 days
+
+6. **AI Service Resilience**
+   - Add fallback modes when AI unavailable
+   - Implement request caching
+   - Add AI cost tracking and budgets
+   - **Priority**: HIGH
+   - **Effort**: 2-3 days
+
+7. **Audit & History System**
+   - Complete history modal implementation
+   - Add comprehensive audit logging
+   - Implement revert functionality
+   - **Priority**: HIGH
+   - **Effort**: 3-4 days
+
+8. **Publishing Workflow**
+   - Fix publishing endpoint issues
+   - Add validation rules engine
+   - Implement approval workflows
+   - **Priority**: HIGH
+   - **Effort**: 2-3 days
+
+### **🟢 MEDIUM PRIORITY IMPROVEMENTS**
+
+9. **Batch Operations**
+   - Bulk accept/reject by confidence threshold
+   - Batch export functionality
+   - Progress tracking for large operations
+   - **Priority**: MEDIUM
+   - **Effort**: 3-4 days
+
+10. **Collaboration Features**
+    - Multi-user support with authentication
+    - Task assignment system
+    - Conflict resolution tools
+    - **Priority**: MEDIUM
+    - **Effort**: 5-7 days
+
+11. **Performance Optimization**
+    - Implement lazy loading for large datasets
+    - Add pagination for suggestions
+    - Optimize AI request batching
+    - **Priority**: MEDIUM
+    - **Effort**: 2-3 days
+
+12. **Advanced Search & Filtering**
+    - Full-text search across metadata
+    - Advanced filtering by multiple criteria
+    - Saved search queries
+    - **Priority**: MEDIUM
+    - **Effort**: 3-4 days
+
+### **🔵 LOW PRIORITY ENHANCEMENTS**
+
+13. **Analytics Dashboard**
+    - Curation progress tracking
+    - Quality metrics and reporting
+    - Cost analysis and optimization
+    - **Priority**: LOW
+    - **Effort**: 4-5 days
+
+14. **Integration APIs**
+    - Webhook support for external systems
+    - Import/export in multiple formats
+    - Third-party metadata service integration
+    - **Priority**: LOW
+    - **Effort**: 3-4 days
+
+15. **Advanced AI Features**
+    - Custom AI model fine-tuning
+    - Domain-specific confidence calibration
+    - Active learning from curator feedback
+    - **Priority**: LOW
+    - **Effort**: 7-10 days
+
+## **🔬 TESTING SCENARIOS NEEDED**
+
+### **Stress Testing**
+- 1000+ documents in single session
+- 10+ concurrent users
+- 24-hour continuous operation
+- AI service outages during processing
+
+### **Edge Cases**
+- Malformed HTML content
+- Non-English content processing
+- Extremely large documents (>10MB)
+- Network interruptions during processing
+
+### **Security Testing**
+- XSS vulnerability in HTML content
+- SQL injection in API endpoints
+- Authentication bypass attempts
+- Data export security
+
+## **⚡ IMMEDIATE ACTION PLAN**
+
+### **Week 1: Critical Infrastructure**
+1. Implement SQLite database backend
+2. Add basic concurrency controls
+3. Implement resource limits
+
+### **Week 2: Frontend Stability**
+1. Refactor App.vue into components
+2. Add proper error handling
+3. Implement state management
+
+### **Week 3: Feature Completion**
+1. Complete audit/history system
+2. Fix publishing workflow
+3. Add batch operations
+
+### **Week 4: Testing & Polish**
+1. Comprehensive integration testing
+2. Performance optimization
+3. User experience improvements
+
+## **💰 ESTIMATED EFFORT**
+- **Critical Fixes**: 2-3 weeks (120-180 hours)
+- **High Priority**: 2-3 weeks (120-180 hours)  
+- **Medium Priority**: 4-6 weeks (240-360 hours)
+- **Total for Production-Ready**: 8-12 weeks
+
+**The system has excellent AI capabilities and core functionality, but needs significant architectural improvements for production use. The two-agent confidence system is the crown jewel - now we need to build robust infrastructure around it.** 🏗️

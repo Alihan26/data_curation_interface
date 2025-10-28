@@ -1,0 +1,237 @@
+# Data Curation Interface - Complete Setup Guide
+# ================================================
+
+This guide explains how to start both the external metadata curation API and our data curation interface.
+
+## Prerequisites
+- Python 3.13+ installed
+- Node.js and npm installed
+- Both interfaces' source code available
+- OpenAI API key set in environment variables
+
+## Step 1: Start the External Metadata Curation API
+# ================================================
+
+1. Navigate to the external interface directory (the one running on port 8000)
+2. Start the external API:
+   ```bash
+   # This should start the external API on port 8000
+   # (Follow the external interface's own setup instructions)
+   # The external API provides sources, properties, and entities data
+   ```
+
+3. Verify the external API is running:
+   ```bash
+   curl http://localhost:8000/sources/
+   ```
+   You should see JSON data with sources, properties, and entities.
+
+4. **Expected External API Response:**
+   - Sources: 2 (Franzini Catalog, Ivda Collection)
+   - Properties: 99 (metadata fields for curation)
+   - Entities: 762+ (individual items to curate)
+
+## Step 2: Start Our Data Curation Interface
+# =========================================
+
+### Backend Setup
+1. Navigate to our backend directory:
+   ```bash
+   cd /Users/alihankaratasli/Desktop/Bachelorarbeit/Code/GitHub/data_curation_interface/backend
+   ```
+
+2. Activate the virtual environment:
+   ```bash
+   source venv/bin/activate
+   ```
+
+3. Install dependencies (if not already done):
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. Start the backend with external API connection:
+   ```bash
+   CURATION_API_BASE_URL=http://localhost:8000 python app.py
+   ```
+   
+   **Alternative method (if the above doesn't work):**
+   ```bash
+   CURATION_API_BASE_URL=http://localhost:8000 python -c "
+   import sys
+   sys.path.append('.')
+   from app import app
+   if __name__ == '__main__':
+       app.run(host='0.0.0.0', port=8001, debug=False)
+   "
+   ```
+
+5. **Expected Backend Logs:**
+   ```
+   INFO:app:Metadata Curation API Client initialized with base URL: http://localhost:8000
+   INFO:app:AI Curation Service initialized with model: gpt-4o-mini
+   INFO:app:API data loaded - Sources: 2, Properties: 99, Editions: 762
+   * Running on http://127.0.0.1:8001
+   ```
+
+### Frontend Setup
+1. Open a new terminal and navigate to frontend directory:
+   ```bash
+   cd /Users/alihankaratasli/Desktop/Bachelorarbeit/Code/GitHub/data_curation_interface/frontend
+   ```
+
+2. Install dependencies (if not already done):
+   ```bash
+   npm install
+   ```
+
+3. Start the frontend development server:
+   ```bash
+   npm run dev
+   ```
+   
+   **Note:** The frontend will automatically run on port 4000 as configured in `vite.config.js`
+
+4. **Expected Frontend Logs:**
+   ```
+   VITE v5.x.x  ready in xxx ms
+   ➜  Local:   http://localhost:4000/
+   ➜  Network: use --host to expose
+   ```
+
+## Step 3: Verify Everything is Working
+# ====================================
+
+1. **External API**: http://localhost:8000/sources/ (should show JSON data)
+2. **Our Backend**: http://localhost:8001/api/sources (should show same data)
+3. **Our Frontend**: http://localhost:4000 (should show the interface with entities)
+
+### What You Should See in Our Interface:
+- **Entity Dropdown**: Lists 762+ entities from both sources
+- **Source Selection**: Franzini Catalog and Ivda Collection
+- **AI Toggle**: Enable/disable AI suggestions
+- **Confidence Slider**: Set threshold for AI suggestions (70% default)
+- **Start Curation Button**: Begin the curation process
+- **Metadata Fields**: 99 properties for manual or AI curation
+
+## Step 4: Force Data Reload (if needed)
+# =====================================
+
+If the backend shows empty data, force a reload:
+```bash
+curl -X POST http://localhost:8001/api/debug/clear-data
+```
+
+## Port Configuration
+# ==================
+
+- **External API**: Port 8000 (sources, properties, entities)
+- **Our Backend**: Port 8001 (proxy to external API + our endpoints)
+- **Our Frontend**: Port 4000 (user interface)
+
+## Environment Variables
+# =====================
+
+The backend needs this environment variable to connect to the external API:
+```bash
+CURATION_API_BASE_URL=http://localhost:8000
+```
+
+## Troubleshooting
+# ===============
+
+### Problem: Backend shows empty data
+**Solution**: The external API might not be running. Check:
+1. Is the external API running on port 8000?
+2. Run: `curl http://localhost:8000/sources/`
+3. If it fails, start the external API first
+
+### Problem: Frontend shows "No entities available"
+**Solution**: Check the backend logs for connection errors. The backend should show:
+```
+INFO:app:API data loaded - Sources: 2, Properties: 99, Editions: 762
+```
+
+### Problem: Port already in use
+**Solution**: Kill existing processes:
+```bash
+# Kill our backend
+pkill -f "python.*app"
+
+# Kill our frontend (if needed)
+pkill -f "npm.*dev"
+```
+
+## Quick Start Commands
+# ====================
+
+```bash
+# Terminal 1: Start external API (follow their instructions)
+# The external API should run on port 8000
+
+# Terminal 2: Start our backend
+cd /Users/alihankaratasli/Desktop/Bachelorarbeit/Code/GitHub/data_curation_interface/backend
+source venv/bin/activate
+CURATION_API_BASE_URL=http://localhost:8000 python app.py
+
+# Terminal 3: Start our frontend
+cd /Users/alihankaratasli/Desktop/Bachelorarbeit/Code/GitHub/data_curation_interface/frontend
+npm run dev
+```
+
+## How to Use the Interface
+# =========================
+
+1. **Select a Source**: Choose between Franzini Catalog or Ivda Collection
+2. **Select an Entity**: Pick from the dropdown list of 762+ entities
+3. **Enable AI (Optional)**: Toggle AI suggestions on/off
+4. **Set Confidence Threshold**: Adjust slider (70% default) for AI suggestions
+5. **Start Curation**: Click the "Start Curation" button
+6. **Review AI Suggestions**: Fields with AI suggestions appear at the top
+7. **Manual Curation**: Fill remaining fields manually
+8. **Save Changes**: Use the save buttons for each field
+
+## Data Flow
+# ==========
+
+1. **External API** (port 8000) → Provides sources, properties, entities
+2. **Our Backend** (port 8001) → Fetches from external API, adds AI curation features
+3. **Our Frontend** (port 4000) → User interface for data curation
+
+## Success Indicators
+# ==================
+
+✅ External API: `curl http://localhost:8000/sources/` returns JSON data
+✅ Our Backend: Shows "API data loaded - Sources: 2, Properties: 99, Editions: 762"
+✅ Our Frontend: Shows entity dropdown with 762+ entities available
+✅ Interface: Can select entities, scrape content, and curate metadata
+✅ AI Suggestions: Generate with confidence scores (70-100%)
+✅ Field Sorting: AI-populated fields appear at the top
+
+## Common Issues & Solutions
+# =========================
+
+### Issue: "No entities available" in frontend
+**Solution**: Check if external API is running on port 8000
+```bash
+curl http://localhost:8000/sources/
+```
+
+### Issue: Backend shows "Connection refused" to external API
+**Solution**: Start the external API first, then our backend
+
+### Issue: AI suggestions not appearing
+**Solution**: Check OpenAI API key is set in environment variables
+```bash
+echo $OPENAI_API_KEY
+```
+
+### Issue: Port already in use
+**Solution**: Kill existing processes
+```bash
+pkill -f "python.*app"
+pkill -f "npm.*dev"
+```
+
+---
+Last Updated: September 30, 2025

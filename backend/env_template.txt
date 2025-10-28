@@ -1,0 +1,20 @@
+# OpenAI Configuration
+OPENAI_API_KEY=your-openai-api-key-here
+OPENAI_MODEL=gpt-4o-mini
+
+# Optional: Customize AI behavior
+AI_TEMPERATURE=0.3
+AI_MAX_TOKENS=2000
+
+# Confidence mode:
+# 'single' (default): one model returns value + confidence
+# 'two_pass': Agent A (reasoner) returns value + long reasoning; Agent B (interpreter) returns calibrated confidence
+AI_CONFIDENCE_MODE=single
+
+# Optional model overrides for two-pass mode
+AI_REASONER_MODEL=gpt-4o-mini
+AI_INTERPRETER_MODEL=gpt-4o-mini
+
+# Metadata Curation API Configuration
+CURATION_API_BASE_URL=http://localhost:8000
+CURATION_API_KEY=your-api-key-here

@@ -1,0 +1,8 @@
+flask==2.3.3
+flask-cors==6.0.1
+requests==2.32.4
+beautifulsoup4==4.12.2
+lxml==4.9.3
+openai>=1.6.0
+python-dotenv==1.0.0
+metadata-curation-client==0.8.1
